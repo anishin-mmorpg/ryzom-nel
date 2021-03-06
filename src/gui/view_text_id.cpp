@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -205,7 +201,7 @@ namespace NLGUI
 		if (!_Initialized)
 		{
 			// String result
-			string result;
+			ucstring result;
 
 			if( textProvider != NULL )
 			{
@@ -219,8 +215,8 @@ namespace NLGUI
 			// Remove all {break}
 			for(;;)
 			{
-				string::size_type index = result.find("{break}");
-				if (index == string::npos) break;
+				ucstring::size_type index = result.find (ucstring("{break}"));
+				if (index == ucstring::npos) break;
 				result = result.substr (0, index) + result.substr(index+7, result.size());
 			}
 
@@ -229,16 +225,14 @@ namespace NLGUI
 			while(NLMISC::strFindReplace(result,   "{ros_exit}",   ""));
 
 			// Modify the text?
-			if (_StringModifier)
-			{
+			if(_StringModifier)
 				_StringModifier->onReceiveTextId(result);
-			}
 
 			// Set the Text
 			if(_IsTextFormatTaged)
 				setTextFormatTaged(result);
 			else
-				setText(result);
+				setText (result);
 		}
 		CViewText::checkCoords();
 	}

@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2015-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -49,7 +45,7 @@ namespace NLGUI
 		_Aligned = 1;
 		_TrackPos = 0;
 		_TrackDispPos = 0;
-		_TrackSize = _TrackSizeMin = 8;
+		_TrackSize = _TrackSizeMin = 16;
 		_Min = 0;
 		_Max = 100;
 		_Value = 0;
@@ -57,7 +53,6 @@ namespace NLGUI
 		_MouseDown = false;
 		_CallingAH = false;
 		_Cancelable = false;
-		_Keyboard = false;
 		_Target = NULL;
 		_Inverted = false;
 		_IsDBLink = false;
@@ -224,11 +219,6 @@ namespace NLGUI
 		if( name == "cancelable" )
 		{
 			return toString( _Cancelable );
-		}
-		else
-		if( name == "keyboard" )
-		{
-			return toString( _Keyboard );
 		}
 		else
 		if( name == "frozen" )
@@ -411,14 +401,6 @@ namespace NLGUI
 			return;
 		}
 		else
-		if( name == "keyboard" )
-		{
-			bool b;
-			if( fromString( value, b ) )
-				_Keyboard = b;
-			return;
-		}
-		else
 		if( name == "frozen" )
 		{
 			bool b;
@@ -488,7 +470,6 @@ namespace NLGUI
 		xmlSetProp( node, BAD_CAST "target_stepy", BAD_CAST toString( _TargetStepY ).c_str() );
 		xmlSetProp( node, BAD_CAST "step_value", BAD_CAST toString( _StepValue ).c_str() );
 		xmlSetProp( node, BAD_CAST "cancelable", BAD_CAST toString( _Cancelable ).c_str() );
-		xmlSetProp( node, BAD_CAST "keyboard", BAD_CAST toString( _Keyboard ).c_str() );
 		xmlSetProp( node, BAD_CAST "frozen", BAD_CAST toString( _Frozen ).c_str() );
 
 		return node;
@@ -561,17 +542,17 @@ namespace NLGUI
 
 		// Read Action handlers
 		prop = (char*) xmlGetProp( node, (xmlChar*)"onscroll" );
-		if (prop)	_AHOnScroll = NLMISC::toLowerAscii(prop.str());
+		if (prop)	_AHOnScroll = NLMISC::toLower(prop.str());
 		prop = (char*) xmlGetProp( node, (xmlChar*)"params" );
 		if (prop)	_AHOnScrollParams = string((const char*)prop);
 		//
 		prop = (char*) xmlGetProp( node, (xmlChar*)"onscrollend" );
-		if (prop)	_AHOnScrollEnd = NLMISC::toLowerAscii(prop.str());
+		if (prop)	_AHOnScrollEnd = NLMISC::toLower(prop.str());
 		prop = (char*) xmlGetProp( node, (xmlChar*)"end_params" );
 		if (prop)	_AHOnScrollEndParams = string((const char*)prop);
 		//
 		prop = (char*) xmlGetProp( node, (xmlChar*)"onscrollcancel" );
-		if (prop)	_AHOnScrollCancel = NLMISC::toLowerAscii(prop.str());
+		if (prop)	_AHOnScrollCancel = NLMISC::toLower(prop.str());
 		prop = (char*) xmlGetProp( node, (xmlChar*)"cancel_params" );
 		if (prop)	_AHOnScrollCancelParams = string((const char*)prop);
 
@@ -603,9 +584,6 @@ namespace NLGUI
 
 		prop = (char*) xmlGetProp( node, (xmlChar*)"cancelable" );
 		if (prop) _Cancelable = convertBool(prop);
-
-		prop = (char*) xmlGetProp( node, (xmlChar*)"keyboard" );
-		if (prop) _Keyboard = convertBool(prop);
 
 		prop= (char*) xmlGetProp (node, (xmlChar*)"frozen");
 		_Frozen = false;
@@ -928,30 +906,6 @@ namespace NLGUI
 			{
 				moveTargetY (-(eventDesc.getWheel() * 12));
 				return true;
-			}
-		}
-		else if (event.getType() == NLGUI::CEventDescriptor::key)
-		{
-			const NLGUI::CEventDescriptorKey &eventDesc = (const NLGUI::CEventDescriptorKey &)event;
-
-			if (eventDesc.getKeyEventType() == NLGUI::CEventDescriptorKey::keydown)
-			{
-				if (_Keyboard)
-				{
-					sint32 i = 0;
-					// direction
-					if (eventDesc.getKey() == KeyNEXT)  i++;
-					else if (eventDesc.getKey() == KeyPRIOR) i--;
-					else
-						return false;
-
-					if (_Vertical)
-						moveTrackY(-(i * _TargetStepY));
-					else
-						moveTrackX(-(i * _TargetStepX));
-
-					return true;
-				}
 			}
 		}
 		return false;
@@ -1390,7 +1344,6 @@ namespace NLGUI
 				}
 				else
 				{
-					hs[hsIndex] = Hotspot_Bx;
 					CLuaIHM::fails(ls, "%s : couldn't parse hotspot for vertical scrollbar", funcName);
 				}
 			}
@@ -1412,7 +1365,6 @@ namespace NLGUI
 				}
 				else
 				{
-					hs[hsIndex] = Hotspot_xL;
 					CLuaIHM::fails(ls, "%s : couldn't parse hotspot for horizontal scrollbar", funcName);
 				}
 			}

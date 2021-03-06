@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -77,7 +74,7 @@ BOOL CPickSound::OnInitDialog()
 	
 	for (TNameVect::iterator it = _Names.begin(); it	!= _Names.end(); ++it)
 	{
-		m_NameList.AddString(nlUtf8ToTStr(NLMISC::CStringMapper::unmap(*it).c_str()));
+		m_NameList.AddString(nlUtf8ToTStr((*it).toString()));
 	}
 
 	_Timer = SetTimer (1, 100, NULL);
@@ -114,7 +111,7 @@ void CPickSound::OnSelchange()
 	nlassert(m_NameList.GetTextLen(m_NameList.GetCurSel()) < 1024);
 	
 	m_NameList.GetText(m_NameList.GetCurSel(), str);
-	_CurrName = NLMISC::CStringMapper::map(NLMISC::tStrToUtf8(str)); 
+	_CurrName = NLMISC::CSheetId(NLMISC::tStrToUtf8(str), "sound"); 
 	
 }
 

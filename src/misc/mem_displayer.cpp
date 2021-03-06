@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -58,8 +55,6 @@ static string getFuncInfo (DWORD_TYPE funcAddr, DWORD_TYPE stackAddr)
 
 	DWORD symSize = 10000;
 	PIMAGEHLP_SYMBOL  sym = (PIMAGEHLP_SYMBOL) GlobalAlloc (GMEM_FIXED, symSize);
-	if (!sym) return str;
-
 	::ZeroMemory (sym, symSize);
 	sym->SizeOfStruct = symSize;
 	sym->MaxNameLength = symSize - sizeof(IMAGEHLP_SYMBOL);

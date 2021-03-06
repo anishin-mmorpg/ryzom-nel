@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -36,7 +33,7 @@ namespace NLMISC {
 class CWinEventEmitter : public IEventEmitter
 {
 public:
-	CWinEventEmitter () : _Utf16Pair(0), _MouseEventsEnabled(true), _KeyboardEventsEnabled(true), _IMEEventsEnabled(true)
+	CWinEventEmitter () : _MouseEventsEnabled(true), _KeyboardEventsEnabled(true), _IMEEventsEnabled(true)
 	{
 		_HWnd=NULL;
 		resetButtonFlagState ();
@@ -106,7 +103,6 @@ public:
 private:
 	CWinEventServer		_InternalServer;
 	HWND				_HWnd;
-	wchar_t				_Utf16Pair;
 public:
 	// private: may need to be in sync with direct input flags however...
 	bool				_CtrlButton;

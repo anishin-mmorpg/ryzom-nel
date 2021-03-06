@@ -82,10 +82,6 @@ for line in ps:
 	except NameError:
 		ContinentPath = "_invalid"
 	try:
-		ContinentSheet
-	except NameError:
-		ContinentSheet = ContinentName
-	try:
 		BankTileBankName
 	except NameError:
 		BankTileBankName = "_invalid"
@@ -117,7 +113,6 @@ for line in ps:
 	newline = newline.replace("%ContinentPath%", ContinentPath)
 	newline = newline.replace("%CommonName%", CommonName)
 	newline = newline.replace("%CommonPath%", CommonPath)
-	newline = newline.replace("%ContinentSheet%", ContinentSheet)
 	newline = newline.replace("%BankTileBankName%", BankTileBankName)
 	newline = newline.replace("%IgLandBuildDirectory%", IgLandBuildDirectory)
 	newline = newline.replace("%IgOtherBuildDirectory%", IgOtherBuildDirectory)

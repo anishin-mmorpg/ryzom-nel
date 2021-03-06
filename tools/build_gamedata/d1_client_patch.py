@@ -51,7 +51,6 @@ printLog(log, "")
 
 # Find tools
 BnpMake = findTool(log, ToolDirectories, BnpMakeTool, ToolSuffix)
-SnpMake = findTool(log, ToolDirectories, SnpMakeTool, ToolSuffix);
 PatchGen = findTool(log, ToolDirectories, PatchGenTool, ToolSuffix)
 printLog(log, "")
 
@@ -91,23 +90,20 @@ else:
 					inCategories = 1
 					cfg.write("\t<_Categories>\n")
 					for category in InstallClientData:
-						packExt = ".bnp"
-						if (category["StreamedPackages"]):
-							packExt = ".snp"
 						cfg.write("\t\t<_Category>\n")
 						cfg.write("\t\t\t<_Name type=\"STRING\" value=\"" + category["Name"] + "\"/>\n")
 						if category["UnpackTo"] != None:
 							if category["UnpackTo"] != "":
 								cfg.write("\t\t\t<_UnpackTo type=\"STRING\" value=\"./" + category["UnpackTo"] + "/\"/>\n")
 							else:
-								cfg.write("\t\t\t<_UnpackTo type=\"STRING\" value=\"./\"/>\n")
+								cfg.write("\t\t\t<_UnpackTo type=\"SINT32\" value=\"./\"/>\n")
 						cfg.write("\t\t\t<_IsOptional type=\"SINT32\" value=\"" + str(category["IsOptional"]) + "\"/>\n")
 						cfg.write("\t\t\t<_IsIncremental type=\"SINT32\" value=\"" + str(category["IsIncremental"]) + "\"/>\n")
 						for package in category["Packages"]:
 							if (len(package[1]) > 0):
 								cfg.write("\t\t\t<_Files type=\"STRING\" value=\"" + package[1][0] + "\"/>\n")
 							else:
-								cfg.write("\t\t\t<_Files type=\"STRING\" value=\"" + package[0] + packExt + "\"/>\n")
+								cfg.write("\t\t\t<_Files type=\"STRING\" value=\"" + package[0] + ".bnp\"/>\n")
 						for ref in category["Refs"]:
 							cfg.write("\t\t\t<_Files type=\"STRING\" value=\"" + ref + "_.ref\"/>\n")
 						cfg.write("\t\t</_Category>\n")
@@ -123,44 +119,24 @@ else:
 	printLog(log, "")
 	printLog(log, ">>> Make bnp <<<")
 	targetPath = ClientPatchDirectory + "/bnp"
-	tagPath = ClientPatchDirectory + "/bnp_tag"
 	mkPath(log, targetPath)
-	mkPath(log, tagPath)
 	for category in InstallClientData:
-		packExt = ".bnp"
-		if (category["StreamedPackages"]):
-			packExt = ".snp"
 		for package in category["Packages"]:
 			printLog(log, "PACKAGE " + package[0])
 			sourcePath = InstallDirectory + "/" + package[0]
 			mkPath(log, sourcePath)
-			targetBnp = targetPath + "/" + package[0] + packExt
-			tagBnp = tagPath + "/" + package[0] + packExt + ".tag"
+			targetBnp = targetPath + "/" + package[0] + ".bnp"
 			if (len(package[1]) > 0):
 				targetBnp = targetPath + "/" + package[1][0]
-				tagBnp = tagPath + "/" + package[1][0] + ".tag"
 				printLog(log, "TARGET " + package[1][0])
 			needUpdateBnp = 1
 			if (len(package) > 2):
-				needUpdateBnp = needUpdate(log, sourcePath + "/" + package[2], tagBnp)
+				needUpdateBnp = needUpdate(log, sourcePath + "/" + package[2], targetBnp)
 			else:
-				needUpdateBnp = needUpdateDirNoSubdirFile(log, sourcePath, tagBnp)
+				needUpdateBnp = needUpdateDirNoSubdirFile(log, sourcePath, targetBnp)
 			if (needUpdateBnp):
-				subRet = 0
-				open(tagBnp, 'a').close()
-				os.utime(tagBnp, None)
-				if (category["StreamedPackages"]):
-					printLog(log, "SNP " + targetBnp)
-					# cwDir = os.getcwd().replace("\\", "/")
-					# toolDir = os.path.dirname(Lzma).replace("\\", "/")
-					# os.chdir(toolDir)
-					subRet = subprocess.call([ SnpMake, "-p", sourcePath, targetBnp, ClientPatchDirectory + "/stream" ] + package[1][1:])
-					# os.chdir(cwDir)
-				else:
-					printLog(log, "BNP " + targetBnp)
-					subRet = subprocess.call([ BnpMake, "-p", sourcePath, "-o", targetBnp ] + package[1][1:])
-				if (subRet != 0):
-					os.remove(tagBnp)
+				printLog(log, "BNP " + targetBnp)
+				subprocess.call([ BnpMake, "-p", sourcePath, "-o", targetBnp ] + package[1][1:])
 			else:
 				printLog(log, "SKIP " + targetBnp)
 	printLog(log, "")

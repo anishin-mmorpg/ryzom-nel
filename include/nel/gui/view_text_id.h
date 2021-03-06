@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -39,7 +35,7 @@ namespace NLGUI
 	public:
 		virtual ~IOnReceiveTextId() {}
 		// the deriver may change the input text
-		virtual	void	onReceiveTextId(std::string &str) =0;
+		virtual	void	onReceiveTextId(ucstring &str) =0;
 	};
 
 	// ***************************************************************************
@@ -59,8 +55,8 @@ namespace NLGUI
 		{
 		public:
 			virtual ~IViewTextProvider(){}
-			virtual bool getString(uint32 stringId, std::string &result) = 0;
-			virtual bool getDynString(uint32 dynStringId, std::string &result) = 0;
+			virtual bool getString( uint32 stringId, ucstring &result ) = 0;
+			virtual bool getDynString( uint32 dynStringId, ucstring &result ) = 0;
 		};
 
 		CViewTextID(const TCtorParam &param) : CViewText(param)
@@ -145,7 +141,7 @@ namespace NLGUI
 		// If true, setTextFormatted() is used instead of setText()
 		bool					_IsTextFormatTaged;
 
-		// Optional utf-8 string modifier
+		// Optional ucstring modifier
 		IOnReceiveTextId		*_StringModifier;
 		std::string				_DBPath;
 		static IViewTextProvider* getTextProvider(){ return textProvider; }

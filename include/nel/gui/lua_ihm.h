@@ -1,8 +1,5 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
-// Copyright (C) 2010-2019  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -86,12 +83,10 @@ namespace NLGUI
 
 
 		// ucstring
-#ifdef RYZOM_LUA_UCSTRING
 		static bool pop(CLuaState &ls, ucstring &dest);
 		static void push(CLuaState &ls, const ucstring &value);
 		static bool	isUCStringOnStack(CLuaState &ls, sint index);
 		static bool getUCStringOnStack(CLuaState &ls, sint index, ucstring &dest);
-#endif
 
 
 		// RGBA
@@ -110,9 +105,7 @@ namespace NLGUI
 		static void	check(CLuaState &ls, bool ok, const std::string &failReason);
 		static void	checkArgType(CLuaState &ls, const char *funcName, uint index, int argType);
 		static void	checkArgTypeRGBA(CLuaState &ls, const char *funcName, uint index);
-#ifdef RYZOM_LUA_UCSTRING
 		static void	checkArgTypeUCString(CLuaState &ls, const char *funcName, uint index);
-#endif
 		/** throw a lua expection (inside a C function called from lua) with the given reason, and the current call stack
 		  * The various check... function call this function when their test fails
 		  */
@@ -158,19 +151,16 @@ namespace NLGUI
 		static uint32		getLocalTime();
 		static double		getPreciseLocalTime();
 		static std::string	findReplaceAll(const std::string &str, const std::string &search, const std::string &replace);
-#ifdef RYZOM_LUA_UCSTRING
 		static ucstring		findReplaceAll(const ucstring &str, const ucstring &search, const ucstring &replace);
 		static ucstring		findReplaceAll(const ucstring &str, const std::string &search, const std::string &replace);
 		static ucstring		findReplaceAll(const ucstring &str, const std::string &search, const ucstring &replace);
 		static ucstring		findReplaceAll(const ucstring &str, const ucstring &search, const std::string &replace);
-#endif
 
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		static int luaMethodCall(lua_State *ls);
 		
 		static int	setOnDraw(CLuaState &ls);		// params: CInterfaceGroup*, "script". return: none
-		static int	getOnDraw(CLuaState &ls);		// params: CInterfaceGroup*. return: "script" (nil if none)
 		static int	addOnDbChange(CLuaState &ls);	// params: CInterfaceGroup*, "dblist", "script". return: none
 		static int	removeOnDbChange(CLuaState &ls);// params: CInterfaceGroup*. return: none
 		static int  setCaptureKeyboard(CLuaState &ls);
@@ -189,10 +179,8 @@ namespace NLGUI
 		static int	runExpr(CLuaState &ls);			// params: "expr". return: any of: nil,bool,string,number, RGBA, UCString
 		static int	runFct(CLuaState &ls);			// params: "expr", param1, param2.... return: any of: nil,bool,string,number, RGBA, UCString
 		static int  runCommand(CLuaState &ls);      // params: "command name", param1, param2 ... return true or false
-#ifdef RYZOM_LUA_UCSTRING
 		static int  isUCString(CLuaState &ls);
 		static int	concatUCString(CLuaState &ls); // workaround for + operator that don't work in luabind for ucstrings ...
-#endif
 		static int	concatString(CLuaState &ls); // speedup concatenation of several strings
 		static int	tableToString(CLuaState &ls); // concat element of a table to build a string
 		static int	getPathContent(CLuaState &ls);

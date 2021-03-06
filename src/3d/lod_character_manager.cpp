@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -982,9 +979,6 @@ void			CLodCharacterManager::addTextureCompute(CLodCharacterInstance &instance, 
 
 	// get lookup ptr.
 	nlassert(lodTexture.Texture.size()==NL3D_CLOD_TEXT_SIZE);
-	if (lodTexture.Texture.size() < NL3D_CLOD_TEXT_SIZE)
-		return;
-
 	const CLodCharacterTexture::CTUVQ		*lookUpPtr= &lodTexture.Texture[0];
 
 	// apply the lodTexture, taking only better quality (ie nearer 0)

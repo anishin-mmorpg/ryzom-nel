@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -25,8 +21,6 @@
 #include "nel/misc/file.h"
 #include "nel/misc/uv.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "nel/misc/base64.h"
-#include "nel/misc/md5.h"
 
 using namespace NLMISC;
 using namespace std;
@@ -312,7 +306,7 @@ namespace NLGUI
 		if (fonts.count(name) > 0)
 			driver->deleteTextContext(fonts[name]);
 
-		std::string fontFile = NLMISC::startsWith(font, "ui") ? font : CPath::lookup(font, false);
+		std::string fontFile = CPath::lookup(font, false);
 		if (fontFile.empty())
 		{
 			nlwarning("Font file '%s' not found", font.c_str());
@@ -883,19 +877,18 @@ namespace NLGUI
 		driver->setCursorScale( CViewRenderer::hwCursorScale );
 
 		char bufTmp[256], tgaName[256];
-		tgaName[0] = 0;
 		string sTGAname;
 		float uvMinU, uvMinV, uvMaxU, uvMaxV;
 		while (!iFile.eof())
 		{
 			iFile.getline (bufTmp, 256);
-			sscanf (bufTmp, "%s %f %f %f %f", tgaName, &uvMinU, &uvMinV, &uvMaxU, &uvMaxV); // FIXME: Return value ignored, tgaName may be uninitialized
+			sscanf (bufTmp, "%s %f %f %f %f", tgaName, &uvMinU, &uvMinV, &uvMaxU, &uvMaxV);
 			SImage image;
 			image.UVMin.U = uvMinU;
 			image.UVMin.V = uvMinV;
 			image.UVMax.U = uvMaxU;
 			image.UVMax.V = uvMaxV;
-			sTGAname = toLowerAscii(string(tgaName));
+			sTGAname = toLower(string(tgaName));
 
 			string::size_type stripPng = sTGAname.find(".png");
 			if (stripPng != string::npos)
@@ -964,11 +957,11 @@ namespace NLGUI
 			return;
 		}
 		// Look if already existing
-		string sLwrGTName = toLowerAscii(sGlobalTextureName);
+		string sLwrGTName = toLower(sGlobalTextureName);
 		TGlobalTextureList::iterator ite = _GlobalTextures.begin();
 		while (ite != _GlobalTextures.end())
 		{
-			if (toLowerAscii(ite->Name) == sLwrGTName)
+			if (toLower(ite->Name) == sLwrGTName)
 				break;
 			ite++;
 		}
@@ -1002,16 +995,12 @@ namespace NLGUI
 										)
 	{
 		if (sGlobalTextureName.empty()) return -1;
-
-		if (startsWith(sGlobalTextureName, "data:image/"))
-			return createTextureFromDataURL(sGlobalTextureName, uploadDXTC, bReleasable);
-
 		// Look if already existing
-		string sLwrGTName = toLowerAscii(sGlobalTextureName);
+		string sLwrGTName = toLower(sGlobalTextureName);
 		TGlobalTextureList::iterator ite = _GlobalTextures.begin();
 		while (ite != _GlobalTextures.end())
 		{
-			std::string sText = toLowerAscii(ite->Name);
+			std::string sText = toLower(ite->Name);
 			if (sText == sLwrGTName)
 				break;
 			ite++;
@@ -1070,93 +1059,6 @@ namespace NLGUI
 		return TextID;
 	}
 
-	sint32 CViewRenderer::createTextureFromDataURL(const std::string &data, bool uploadDXTC, bool bReleasable)
-	{
-		if (!startsWith(data, "data:image/"))
-			return -1;
-
-		size_t pos = data.find(";base64,");
-		if (pos == std::string::npos)
-		{
-			nlwarning("Failed to parse dataURL (not base64?) '%s'", data.c_str());
-			return -1;
-		}
-
-		std::string md5hash = getMD5((uint8 *)data.c_str(), (uint32)data.size()).toString();
-
-		TGlobalTextureList::iterator ite = _GlobalTextures.begin();
-		while (ite != _GlobalTextures.end())
-		{
-			if (md5hash == ite->Name)
-				break;
-			ite++;
-		}
-
-		// If global texture not exists create it
-		if (ite == _GlobalTextures.end())
-		{
-			std::string decoded = base64::decode(data.substr(pos + 8));
-			if (decoded.empty())
-			{
-				nlwarning("base64 decode failed '%s'", data.substr(pos + 8).c_str());
-				return -1;
-			}
-
-			//
-			CMemStream buf;
-			if (buf.isReading()) buf.invert();
-			buf.serialBuffer((uint8 *)(decoded.data()), decoded.size());
-			buf.invert();
-
-			CBitmap btm;
-			btm.load(buf);
-
-			SGlobalTexture gtTmp;
-			gtTmp.FromGlobaleTexture = false;
-
-			gtTmp.Width = gtTmp.DefaultWidth = btm.getWidth();;
-			gtTmp.Height = gtTmp.DefaultHeight = btm.getHeight();
-
-			if (gtTmp.Width == 0 || gtTmp.Height == 0)
-			{
-				nlwarning("Failed to load the texture '%s', please check image format", data.c_str());
-				return -1;
-			}
-
-			UTextureMem *texture = driver->createTextureMem(btm.getWidth(), btm.getHeight(), CBitmap::RGBA);
-			if (!texture)
-			{
-				nlwarning("Failed to create mem texture (%d,%d)", btm.getWidth(), btm.getHeight());
-				return -1;
-			}
-
-			memcpy(texture->getPointer(), btm.getPixels().getPtr(), btm.getSize() * 4);
-
-			gtTmp.Texture = texture;
-			gtTmp.Name = md5hash;
-			gtTmp.Texture->setFilterMode(UTexture::Nearest, UTexture::NearestMipMapOff);
-			gtTmp.Texture->setReleasable(bReleasable);
-			if(uploadDXTC)
-				gtTmp.Texture->setUploadFormat(UTexture::DXTC5);
-
-			_GlobalTextures.push_back(gtTmp);
-			ite = _GlobalTextures.end();
-			ite--;
-		}
-
-		// Add a texture with reference to the i th global texture
-		SImage iTmp;
-
-		// Set default parameters
-		iTmp.Name = data;
-		iTmp.GlobalTexturePtr = &(*ite);
-		iTmp.UVMin = CUV(0.f , 0.f);
-		iTmp.UVMax = CUV(1.f , 1.f);
-		sint32 TextID = addSImage(iTmp);
-
-		return TextID;
-	}
-
 	void CViewRenderer::updateTexturePos(const std::string &texturefileName, sint32 offsetX /*=0*/, sint32 offsetY /*=0*/, sint32 width /*=-1*/, sint32 height /*=-1*/)
 	{
 		sint32 id = getTextureIdFromName (texturefileName);
@@ -1184,11 +1086,11 @@ namespace NLGUI
 	 */
 	NL3D::UTexture *CViewRenderer::getGlobalTexture(const std::string &name)
 	{
-		string sLwrGTName = NLMISC::toLowerAscii(name);
+		string sLwrGTName = NLMISC::toLower(name);
 		TGlobalTextureList::iterator ite = _GlobalTextures.begin();
 		while (ite != _GlobalTextures.end())
 		{
-			std::string sText = NLMISC::toLowerAscii(ite->Name);
+			std::string sText = NLMISC::toLower(ite->Name);
 			if (sText == sLwrGTName)
 				break;
 			ite++;
@@ -1254,11 +1156,6 @@ namespace NLGUI
 						{
 							driver->deleteTextureFile (tf);
 						}
-						else
-						{
-							UTextureMem *tf = dynamic_cast<NL3D::UTextureMem *>(iteGT->Texture);
-							if (tf) driver->deleteTextureMem(tf);
-						}
 						_GlobalTextures.erase (iteGT);
 						return;
 					}
@@ -1318,7 +1215,7 @@ namespace NLGUI
 			return -1;
 
 		// convert to lowCase
-		string nameLwr = toLowerAscii(sName);
+		string nameLwr = toLower(sName);
 
 		string::size_type stripPng = nameLwr.find(".png");
 		if (stripPng != string::npos)
@@ -2033,16 +1930,6 @@ namespace NLGUI
 			_TextureId = rVR.createTexture (textureName, offsetX, offsetY, width, height, uploadDXTC, bReleasable);
 
 		return _TextureId >= 0;
-	}
-
-	// ***************************************************************************
-	void CViewRenderer::CTextureId::clear()
-	{
-		if (_TextureId >= 0)
-		{
-			CViewRenderer::getInstance()->deleteTexture(_TextureId);
-			_TextureId = -1;
-		}
 	}
 
 	// ***************************************************************************

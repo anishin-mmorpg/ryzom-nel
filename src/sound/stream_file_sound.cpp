@@ -6,21 +6,24 @@
  * CStreamFileSound
  */
 
-// NeL - MMORPG Framework <https://wiki.ryzom.dev/>
-// Copyright (C) 2012-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/* 
+ * Copyright (C) 2012  by authors
+ * 
+ * This file is part of RYZOM CORE.
+ * RYZOM CORE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * RYZOM CORE is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public
+ * License along with RYZOM CORE.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 #include "stdsound.h"
 #include <nel/sound/stream_file_sound.h>
@@ -38,7 +41,7 @@ using namespace std;
 
 namespace NLSOUND {
 
-CStreamFileSound::CStreamFileSound() : m_Async(true)
+CStreamFileSound::CStreamFileSound()
 {
 	
 }
@@ -70,11 +73,13 @@ void CStreamFileSound::serial(NLMISC::IStream &s)
 
 void CStreamFileSound::setMusicFilePath(const std::string &filePath, bool async, bool loop)
 {
-#if !FINAL_VERSION
-	_Name = NLMISC::CStringMapper::map(std::string("<MusicChannel:") + NLMISC::CFile::getFilenameWithoutExtension(filePath) + ">");
+/*#if !FINAL_VERSION
+	//_Name = NLMISC::CStringMapper::map(std::string("<MusicChannel:") + NLMISC::CFile::getFilenameWithoutExtension(filePath) + ">");
+	_Name = NLMISC::CSheetId(std::string("<MusicChannel:") + NLMISC::CFile::getFilenameWithoutExtension(filePath) + ">");
 #else
-	_Name = NLMISC::CStringMapper::map("<MusicChannel>");
-#endif
+	//_Name = NLMISC::CStringMapper::map("<MusicChannel>");
+#endif*/
+	_Name = NLMISC::CSheetId("music_channel.sound");
 	_ConeInnerAngle = NLMISC::Pi * 2;
 	_ConeOuterAngle = NLMISC::Pi * 2;
 	_Looping = loop;

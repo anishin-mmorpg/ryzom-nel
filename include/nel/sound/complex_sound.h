@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Matt RAYKOWSKI (sfb) <matt.raykowski@gmail.com>
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -56,8 +52,8 @@ public:
 
 	const std::vector<uint32>		&getSoundSeq() const						{ return _SoundSeq;}
 	const std::vector<uint32>		&getDelaySeq() const						{ return _DelaySeq;}
-	NLMISC::TStringId				getSound(uint index) const					{ return !_Sounds.empty() ? _Sounds[index%_Sounds.size()]:0;}
-	const std::vector<NLMISC::TStringId>	&getSounds() const					{ return _Sounds;}
+	NLMISC::CSheetId				getSound(uint index) const					{ return !_Sounds.empty() ? _Sounds[index%_Sounds.size()]:NLMISC::CSheetId::Unknown;}
+	const std::vector<NLMISC::CSheetId>	&getSounds() const					{ return _Sounds;}
 
 	uint32							getFadeLength() const						{ return _XFadeLength;}
 
@@ -91,7 +87,7 @@ private:
 	virtual float					getMaxDistance() const;
 
 	TPATTERN_MODE					_PatternMode;
-	std::vector<NLMISC::TStringId>	_Sounds;
+	std::vector<NLMISC::CSheetId>	_Sounds;
 	float							_TicksPerSeconds;
 	std::vector<uint32>				_SoundSeq;
 	/// Sequence of delay in millisec.

@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -519,10 +515,11 @@ namespace NLGUI
 		{
 			_HardText = std::string( (const char*)ptr );
 			const char *propPtr = ptr;
-			if (NLMISC::startsWith(propPtr, "ui"))
-				addTextChild(CI18N::get(propPtr));
-			else
-				addTextChild(propPtr);
+			ucstring Text = ucstring(propPtr);
+			if ((strlen(propPtr)>2) && (propPtr[0] == 'u') && (propPtr[1] == 'i'))
+				Text = CI18N::get (propPtr);
+
+			addTextChild(Text);
 		}
 		else
 		{
@@ -540,7 +537,7 @@ namespace NLGUI
 
 
 	// ----------------------------------------------------------------------------
-	void CGroupList::addTextChild(const std::string& line,   bool multiLine /*= true*/)
+	void CGroupList::addTextChild(const ucstring& line,   bool multiLine /*= true*/)
 	{
 		const string elid = _Id + ":el" + toString(_IdCounter); ++_IdCounter;
 		CViewText *view= new CViewText (elid,   string(""),   _Templ.getFontSize(),   _Templ.getColor(),   _Templ.getShadow());
@@ -559,7 +556,7 @@ namespace NLGUI
 
 
 	// ----------------------------------------------------------------------------
-	void CGroupList::addTextChild(const std::string& line,   const CRGBA& textColor,   bool multiLine /*= true*/)
+	void CGroupList::addTextChild(const ucstring& line,   const CRGBA& textColor,   bool multiLine /*= true*/)
 	{
 		const string elid = _Id + ":el" + toString(_IdCounter); ++_IdCounter;
 		CViewText *view= new CViewText (elid,   string(""),   _Templ.getFontSize(),   _Templ.getColor(),   _Templ.getShadow());
@@ -1286,18 +1283,12 @@ namespace NLGUI
 	// ----------------------------------------------------------------------------
 	int CGroupList::luaAddTextChild(CLuaState &ls)
 	{
-		const char *funcName = "addTextChild";
-		CLuaIHM::checkArgCount(ls, funcName, 1);
-#ifdef RYZOM_LUA_UCSTRING
-		ucstring text; // Compatibility
+		CLuaIHM::checkArgCount(ls, "addTextChild", 1);
+		ucstring text;
 		if(CLuaIHM::pop(ls, text))
 		{
-			addTextChild(text.toUtf8());
+			addTextChild(text);
 		}
-#else
-		CLuaIHM::checkArgType(ls, funcName, 1, LUA_TSTRING);
-		addTextChild(ls.toString(1));
-#endif
 		return 0;
 	}
 
@@ -1312,13 +1303,15 @@ namespace NLGUI
 		CLuaIHM::checkArgType(ls, funcName, 4, LUA_TNUMBER);
 		CLuaIHM::checkArgType(ls, funcName, 5, LUA_TNUMBER);
 		string text = ls.toString(1);
+		ucstring ucText;
+		ucText.fromUtf8(text);
 
 		uint r = (uint) ls.toInteger(2);
 		uint g = (uint) ls.toInteger(3);
 		uint b = (uint) ls.toInteger(4);
 		uint a = (uint) ls.toInteger(5);
 
-		addTextChild(text, CRGBA(r, g, b, a));
+		addTextChild(ucText, CRGBA(r, g, b, a));
 
 		return 0;
 	}

@@ -151,7 +151,7 @@ uint			CAsyncTextureManager::addTextureRef(const string &textNameNotLwr, CMeshBa
 	uint	ret;
 
 	// lower case name
-	string	textName = toLowerAscii(textNameNotLwr);
+	string	textName = toLower(textNameNotLwr);
 
 	// find the texture in map
 	ItTextureEntryMap	it;

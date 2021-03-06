@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -19,7 +16,6 @@
 
 #include "stdmisc.h"
 #include "nel/misc/system_utils.h"
-#include "nel/misc/utf_string_view.h"
 
 #ifdef NL_OS_WINDOWS
 #define INITGUID
@@ -155,7 +151,7 @@ bool CSystemUtils::updateProgressBar(uint value, uint total)
 	return true;
 }
 
-bool CSystemUtils::copyTextToClipboard(const std::string &text)
+bool CSystemUtils::copyTextToClipboard(const ucstring &text)
 {
 	if (text.empty()) return false;
 
@@ -168,47 +164,29 @@ bool CSystemUtils::copyTextToClipboard(const std::string &text)
 		bool isUnicode = (IsClipboardFormatAvailable(CF_UNICODETEXT) == TRUE);
 
 		// allocates a buffer to copy text in global memory
-		std::string textMbcs;
-		std::wstring textWide;
-		if (!isUnicode)
-		{
-			textMbcs = NLMISC::utf8ToMbcs(text); // Prefer system for API
-			if (text.size() && !textMbcs.size()) 
-				textMbcs = CUtfStringView(text).toAscii(); // Fallback to 7-bit ASCII
-		}
-		else
-		{
-			textWide = NLMISC::utf8ToWide(text); // Prefer system for API
-			if (text.size() && !textWide.size()) 
-				textWide = CUtfStringView(text).toWide();
-		}
-		HGLOBAL mem = GlobalAlloc(GHND | GMEM_DDESHARE, isUnicode 
-			? ((textWide.size() + 1) * sizeof(wchar_t))
-			: (textMbcs.size() + 1));
+		HGLOBAL mem = GlobalAlloc(GHND|GMEM_DDESHARE, (text.size()+1) * (isUnicode ? 2:1));
 
 		if (mem)
 		{
 			// create a lock on this buffer
 			void *hLock = GlobalLock(mem);
-			if (hLock)
-			{
-				// copy text to this buffer
-				if (isUnicode)
-					wcscpy((wchar_t *)hLock, textWide.c_str());
-				else
-					strcpy((char *)hLock, textMbcs.c_str());
 
-				// unlock buffer
-				GlobalUnlock(mem);
+			// copy text to this buffer
+			if (isUnicode)
+				wcscpy((wchar_t*)hLock, (const wchar_t*)text.c_str());
+			else
+				strcpy((char*)hLock, text.toString().c_str());
 
-				// empty clipboard
-				EmptyClipboard();
+			// unlock buffer
+			GlobalUnlock(mem);
 
-				// set new data to clipboard in the right format
-				SetClipboardData(isUnicode ? CF_UNICODETEXT : CF_TEXT, mem);
+			// empty clipboard
+			EmptyClipboard();
 
-				res = true;
-			}
+			// set new data to clipboard in the right format
+			SetClipboardData(isUnicode ? CF_UNICODETEXT:CF_TEXT, mem);
+
+			res = true;
 		}
 
 		CloseClipboard();
@@ -218,7 +196,7 @@ bool CSystemUtils::copyTextToClipboard(const std::string &text)
 	return res;
 }
 
-bool CSystemUtils::pasteTextFromClipboard(std::string &text)
+bool CSystemUtils::pasteTextFromClipboard(ucstring &text)
 {
 	bool res = false;
 
@@ -230,7 +208,7 @@ bool CSystemUtils::pasteTextFromClipboard(std::string &text)
 
 		// get data from clipboard (if not of this type, they are converted)
 		// warning, this code can't be debuggued in VC++ IDE, hObj will be always NULL
-		HANDLE hObj = GetClipboardData(isUnicode ? CF_UNICODETEXT : CF_TEXT);
+		HANDLE hObj = GetClipboardData(isUnicode ? CF_UNICODETEXT:CF_TEXT);
 
 		if (hObj)
 		{
@@ -241,23 +219,9 @@ bool CSystemUtils::pasteTextFromClipboard(std::string &text)
 			{
 				// retrieve clipboard data
 				if (isUnicode)
-				{
-					const wchar_t *str = (const wchar_t *)hLock;
-					text = NLMISC::wideToUtf8(str); // Prefer system for API
-					if (!text.size() && str[0])
-						text = CUtfStringView(str).toUtf8();
-					else
-						text = CUtfStringView(text).toUtf8(true); // Sanitize UTF-8 user input
-				}
-				else 
-				{
-					const char *str = (const char *)hLock;
-					text = NLMISC::mbcsToUtf8(str); // Prefer system for API
-					if (!text.size() && str[0])
-						text = CUtfStringView(str).toAscii(); // Fallback to 7-bit ASCII
-					else
-						text = CUtfStringView(text).toUtf8(true); // Sanitize UTF-8 user input
-				}
+					text = (const ucchar*)hLock;
+				else
+					text = (const char*)hLock;
 
 				// unlock data
 				GlobalUnlock(hObj);

@@ -1,9 +1,5 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
-// Copyright (C) 2010-2019  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -275,7 +271,7 @@ namespace NLGUI
 			if (stricmp((char*)cur->name, "action") == 0)
 			{
 				string		strId,  strAh,  strParams,  strCond, strTexture;
-				string	ucstrName;
+				ucstring	ucstrName;
 
 				if (id)		strId = (const char*)id;
 				CXMLAutoPtr name((const char*) xmlGetProp (cur,  (xmlChar*)"name"));
@@ -283,10 +279,9 @@ namespace NLGUI
 				if (name)
 				{
 					const char *ptrName = (const char*)name;
-					if (NLMISC::startsWith(ptrName, "ui"))
-						ucstrName = CI18N::get(ptrName);
-					else
-						ucstrName = ptrName;
+					ucstrName = ucstring(ptrName);
+					if ((strlen(ptrName)>2) && (ptrName[0] == 'u') && (ptrName[1] == 'i'))
+						ucstrName = CI18N::get (ptrName);
 				}
 
 				CXMLAutoPtr ah((const char*) xmlGetProp (cur,  (xmlChar*)"handler"));
@@ -1043,18 +1038,6 @@ namespace NLGUI
 				}
 			}
 
-			if (eventDesc.getEventTypeExtended() == NLGUI::CEventDescriptorMouse::mouserightup)
-			{
-				// If a line is selected and the line is not grayed and has right click action handler
-				if ((_Selected != -1) && (!_Lines[i].ViewText->getGrayed()) && !_Lines[_Selected].AHRightClick.empty())
-				{
-					CAHManager::getInstance()->runActionHandler (	_Lines[_Selected].AHRightClick,
-											CWidgetManager::getInstance()->getCtrlLaunchingModal(),
-											_Lines[_Selected].AHRightClickParams );
-					return true;
-				}
-			}
-
 			if (event.getType() == NLGUI::CEventDescriptor::mouse)
 			{
 				const NLGUI::CEventDescriptorMouse &eventDesc = (const NLGUI::CEventDescriptorMouse &)event;
@@ -1215,7 +1198,7 @@ namespace NLGUI
 
 
 	// ------------------------------------------------------------------------------------------------
-	CViewTextMenu* CGroupSubMenu::addLine (const std::string &name,  const std::string &ah,
+	CViewTextMenu* CGroupSubMenu::addLine (const ucstring &name,  const std::string &ah,
 										   const std::string &params,  const std::string &id,
 										   const std::string &cond, const std::string &texture,
 										   bool checkable /*= false*/,  bool checked /*= false*/, bool formatted /*= false */
@@ -1238,7 +1221,7 @@ namespace NLGUI
 			pV->setText (name);
 		}
 		pV->setColor (_GroupMenu->_Color);
-		pV->setFontSize (_GroupMenu->_FontSize, _GroupMenu->_FontSizeCoef);
+		pV->setFontSize (_GroupMenu->_FontSize);
 		pV->setShadow (_GroupMenu->_Shadow);
 		pV->setShadowOutline (_GroupMenu->_ShadowOutline);
 		pV->setCheckable(checkable);
@@ -1296,7 +1279,7 @@ namespace NLGUI
 		return pV;
 	}
 
-	CViewTextMenu* CGroupSubMenu::addLineAtIndex(uint index,  const std::string &name,  const std::string &ah,
+	CViewTextMenu* CGroupSubMenu::addLineAtIndex(uint index,  const ucstring &name,  const std::string &ah,
 												 const std::string &params,  const std::string &id /*=""*/,
 												 const std::string &cond /*=std::string()*/, const std::string &texture,
 												 bool checkable /*= false*/,  bool checked /*= false*/, bool formatted /*= false */
@@ -1327,7 +1310,7 @@ namespace NLGUI
 		}
 
 		pV->setColor (_GroupMenu->_Color);
-		pV->setFontSize (_GroupMenu->_FontSize, _GroupMenu->_FontSizeCoef);
+		pV->setFontSize (_GroupMenu->_FontSize);
 		pV->setShadow (_GroupMenu->_Shadow);
 		pV->setShadowOutline (_GroupMenu->_ShadowOutline);
 		pV->setCheckable(checkable);
@@ -1703,28 +1686,6 @@ namespace NLGUI
 	}
 
 	// ------------------------------------------------------------------------------------------------
-	void CGroupSubMenu::setRightClickHandler(uint lineIndex, const std::string &ah)
-	{
-		if (lineIndex > _Lines.size())
-		{
-			nlwarning("Bad index");
-			return;
-		}
-		_Lines[lineIndex].AHRightClick = ah;
-	}
-
-	// ------------------------------------------------------------------------------------------------
-	void CGroupSubMenu::setRightClickHandlerParam(uint lineIndex, const std::string &params)
-	{
-		if (lineIndex > _Lines.size())
-		{
-			nlwarning("Bad index");
-			return;
-		}
-		_Lines[lineIndex].AHRightClickParams = params;
-	}
-
-	// ------------------------------------------------------------------------------------------------
 	void CGroupSubMenu::setSelectable(uint lineIndex, bool selectable)
 	{
 		if (lineIndex > _Lines.size())
@@ -1823,13 +1784,8 @@ namespace NLGUI
 		const char *funcName = "getLineId";
 		CLuaIHM::checkArgCount(ls, funcName, 1);
 		CLuaIHM::checkArgType(ls, funcName, 1, LUA_TNUMBER);
-#ifdef RYZOM_LUA_UCSTRING
-		ucstring id = getLineId((uint) ls.toInteger(1)); // Compatibility
+		std::string id = getLineId((uint) ls.toInteger(1));
 		CLuaIHM::push(ls, id);
-#else
-		std::string id = getLineId((uint)ls.toInteger(1));
-		ls.push(id);
-#endif
 		return 1;
 	}
 
@@ -1858,21 +1814,13 @@ namespace NLGUI
 	{
 		const char *funcName = "addLine";
 		CLuaIHM::checkArgCount(ls, funcName, 4);
-#ifdef RYZOM_LUA_UCSTRING
 		CLuaIHM::checkArgTypeUCString(ls, funcName, 1);
-#else
-		CLuaIHM::checkArgType(ls, funcName, 1, LUA_TSTRING);
-#endif
 		CLuaIHM::checkArgType(ls, funcName, 2, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 3, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 4, LUA_TSTRING);
-#ifdef RYZOM_LUA_UCSTRING
-		ucstring arg1; // Compatibility
+		ucstring arg1;
 		nlverify(CLuaIHM::getUCStringOnStack(ls, 1, arg1));
-		addLine(arg1.toUtf8(), ls.toString(2), ls.toString(3), ls.toString(4));
-#else
-		addLine(ls.toString(1), ls.toString(2), ls.toString(3), ls.toString(4));
-#endif
+		addLine(arg1, ls.toString(2), ls.toString(3), ls.toString(4));
 		return 0;
 	}
 
@@ -1881,22 +1829,14 @@ namespace NLGUI
 	{
 		const char *funcName = "addIconLine";
 		CLuaIHM::checkArgCount(ls, funcName, 5);
-#ifdef RYZOM_LUA_UCSTRING
 		CLuaIHM::checkArgTypeUCString(ls, funcName, 1);
-#else
-		CLuaIHM::checkArgType(ls, funcName, 1, LUA_TSTRING);
-#endif
 		CLuaIHM::checkArgType(ls, funcName, 2, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 3, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 4, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 5, LUA_TSTRING);
-#ifdef RYZOM_LUA_UCSTRING
-		ucstring arg1; // Compatibility
+		ucstring arg1;
 		nlverify(CLuaIHM::getUCStringOnStack(ls, 1, arg1));
-		addLine(arg1.toUtf8(), ls.toString(2), ls.toString(3), ls.toString(4), string(), ls.toString(5));
-#else
-		addLine(ls.toString(1), ls.toString(2), ls.toString(3), ls.toString(4), string(), ls.toString(5));
-#endif
+		addLine(arg1, ls.toString(2), ls.toString(3), ls.toString(4), string(), ls.toString(5));
 		return 0;
 	}
 
@@ -1906,21 +1846,13 @@ namespace NLGUI
 		const char *funcName = "addLineAtIndex";
 		CLuaIHM::checkArgCount(ls, funcName, 5);
 		CLuaIHM::checkArgType(ls, funcName, 1, LUA_TNUMBER);
-#ifdef RYZOM_LUA_UCSTRING
 		CLuaIHM::checkArgTypeUCString(ls, funcName, 2);
-#else
-		CLuaIHM::checkArgType(ls, funcName, 2, LUA_TSTRING);
-#endif
 		CLuaIHM::checkArgType(ls, funcName, 3, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 4, LUA_TSTRING);
 		CLuaIHM::checkArgType(ls, funcName, 5, LUA_TSTRING);
-#ifdef RYZOM_LUA_UCSTRING
 		ucstring arg2;
 		nlverify(CLuaIHM::getUCStringOnStack(ls, 2, arg2));
-		addLineAtIndex((uint) ls.toInteger(1), arg2.toUtf8(), ls.toString(3), ls.toString(4), ls.toString(5));
-#else
-		addLineAtIndex((uint)ls.toInteger(1), ls.toString(2), ls.toString(3), ls.toString(4), ls.toString(5));
-#endif
+		addLineAtIndex((uint) ls.toInteger(1), arg2, ls.toString(3), ls.toString(4), ls.toString(5));
 		return 0;
 	}
 
@@ -2058,7 +1990,6 @@ namespace NLGUI
 		_ShadowColorGrayed = CRGBA::Black;
 		_HighLightOver.set(128, 0, 0, 255);
 		_FontSize = 12;
-		_FontSizeCoef = true;
 		_Shadow = false;
 		_ShadowOutline = false;
 		_ResizeFromChildH = _ResizeFromChildW = true;
@@ -2561,7 +2492,25 @@ namespace NLGUI
 	}
 
 	// ------------------------------------------------------------------------------------------------
-	void CGroupMenu::addLine(const std::string &name,  const std::string &ah,  const std::string &params,
+	void CGroupMenu::addLine (const string &name,  const string &ah,  const string &params,
+							  const std::string &id/*=std::string()*/,
+							  const std::string &cond /*= std::string()*/, const std::string &texture,
+							  bool checkable /*= false*/,  bool checked /*= false*/
+							 )
+	{
+		if (_RootMenu == NULL)
+		{
+			_RootMenu = new CGroupSubMenu(CViewText::TCtorParam());
+			_RootMenu->_GroupMenu = this;
+			_RootMenu->setSerializable( false );
+			addGroup (_RootMenu);
+		}
+
+		_RootMenu->addLine (name,  ah,  params,  id,  cond,  texture,  checkable,  checked, _Formatted);
+	}
+
+	// ------------------------------------------------------------------------------------------------
+	void CGroupMenu::addLine(const ucstring &name,  const std::string &ah,  const std::string &params,
 							 const std::string &id /* = std::string()*/,
 							 const std::string &cond /*= std::string()*/, const std::string &texture,
 							 bool checkable /*= false*/,  bool checked /*= false*/
@@ -2577,7 +2526,7 @@ namespace NLGUI
 		_RootMenu->addLine (name,  ah,  params,  id,  cond,  texture,  checkable,  checked, _Formatted);
 	}
 	// ------------------------------------------------------------------------------------------------
-	void CGroupMenu::addLineAtIndex(uint index, const std::string &name, const std::string &ah,
+	void CGroupMenu::addLineAtIndex(uint index, const ucstring &name, const std::string &ah,
 									const std::string &params, const std::string &id /*=std::string()*/,
 									const std::string &cond /*=std::string()*/, const std::string &texture,
 									bool checkable /*=false*/, bool checked /*=false*/)
@@ -2635,10 +2584,9 @@ namespace NLGUI
 	}
 
 	// ------------------------------------------------------------------------------------------------
-	void CGroupMenu::setFontSize(uint fontSize, bool coef)
+	void CGroupMenu::setFontSize(uint fontSize)
 	{
 		_FontSize = fontSize;
-		_FontSizeCoef = coef;
 	}
 
 	// ------------------------------------------------------------------------------------------------
@@ -2682,20 +2630,6 @@ namespace NLGUI
 	{
 		if (_RootMenu)
 			_RootMenu->setActionHandlerParam(lineIndex, params);
-	}
-
-	// ------------------------------------------------------------------------------------------------
-	void CGroupMenu::setRightClickHandler(uint lineIndex, const std::string &ah)
-	{
-		if (_RootMenu)
-			_RootMenu->setRightClickHandler(lineIndex, ah);
-	}
-
-	// ------------------------------------------------------------------------------------------------
-	void CGroupMenu::setRightClickHandlerParam(uint lineIndex, const std::string &params)
-	{
-		if (_RootMenu)
-			_RootMenu->setRightClickHandlerParam(lineIndex, params);
 	}
 
 	// ------------------------------------------------------------------------------------------------

@@ -1,8 +1,4 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
-// Copyright (C) 2008-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Matt RAYKOWSKI (sfb) <matt.raykowski@gmail.com>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
@@ -147,7 +143,7 @@ void CMusicChannelFader::updateVolume()
  */
 bool CMusicChannelFader::play(const std::string &filepath, uint xFadeTime, bool async, bool loop)
 {
-	bool stopped = stop(xFadeTime);
+	stop(xFadeTime);
 
 	// Find the next best free music channel
 	uint nextFader = _MaxMusicFader;
@@ -164,7 +160,7 @@ bool CMusicChannelFader::play(const std::string &filepath, uint xFadeTime, bool 
 
 	// Play a song in it :)
 	_CMusicFader &fader = _MusicFader[_ActiveMusicFader];
-	if (xFadeTime && !stopped) fader.fadeIn(xFadeTime); // only fade in when fading out
+	if (xFadeTime) fader.fadeIn(xFadeTime);
 	else fader.XFadeVolume = 1.0f;
 	fader.Playing = true;
 	updateVolume(); // make sure at ok volume to start :)
@@ -173,17 +169,12 @@ bool CMusicChannelFader::play(const std::string &filepath, uint xFadeTime, bool 
 }
 
 /// Stop the music previously loaded and played (the Memory is also freed)
-bool CMusicChannelFader::stop(uint xFadeTime)
+void CMusicChannelFader::stop(uint xFadeTime)
 {
 	if (xFadeTime)
 	{
-		bool stopped = true;
 		for (uint i = 0; i < _MaxMusicFader; ++i) if (_MusicFader[i].Playing)
-		{
 			_MusicFader[i].fadeOut(xFadeTime);
-			stopped = false; // fading
-		}
-		return stopped;
 	}
 	else
 	{
@@ -193,7 +184,6 @@ bool CMusicChannelFader::stop(uint xFadeTime)
 			_MusicFader[i].Fade = false;
 			_MusicFader[i].Playing = false;
 		}
-		return true;
 	}
 }
 

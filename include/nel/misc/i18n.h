@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2012  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -100,7 +96,7 @@ public:
 
 	/// Return a vector with all language available. The vector contains the name of the language.
 	/// The index in the vector is used in \c load() function
-	static const std::vector<std::string> &getLanguageNames();
+	static const std::vector<ucstring> &getLanguageNames();
 
 	/** Return a vector with all language code available.
 	 *	Code are ISO 639-2 compliant.
@@ -123,7 +119,7 @@ public:
 	static void loadFromFilename (const std::string &filename, bool reload);
 
 	/// Returns the name of the language in the language name (English, Francais, ...)
-	static std::string getCurrentLanguageName ();
+	static ucstring getCurrentLanguageName ();
 
 	/// Returns the code of the language ("fr", "en", ...)
 	static std::string getCurrentLanguageCode ();
@@ -135,10 +131,7 @@ public:
 	static bool setSystemLanguageCode (const std::string &languageCode);
 
 	/// Find a string in the selected language and return his association.
-	static const ucstring &getAsUtf16 (const std::string &label);
-
-	/// Find a string in the selected language and return his association.
-	static const std::string &get (const std::string &label);
+	static const ucstring &get (const std::string &label);
 
 	// Test if a string has a translation in the selected language.
 	// NB : The empty string is considered to have a translation
@@ -223,28 +216,24 @@ public:
 
 private:
 
-	typedef std::map<std::string, std::string>					StrMapContainer;
-	typedef std::map<std::string, ucstring>						StrMapContainer16;
+	typedef std::map<std::string, ucstring>						StrMapContainer;
 
 	static ILoadProxy											*_LoadProxy;
 
 	static StrMapContainer										_StrMap;
-	static StrMapContainer16									_StrMap16;
 	static bool													_StrMapLoaded;
 
 	// the alternative language that will be used if the sentence is not found in the original language
 	static StrMapContainer										_StrMapFallback;
-	static StrMapContainer16									_StrMapFallback16;
 
 	static std::vector<std::string>								_LanguageCodes;
-	static std::vector<std::string>								_LanguageNames;
+	static std::vector<ucstring>								_LanguageNames;
 	static std::string											_SystemLanguageCode;
 
 	static bool													_LanguagesNamesLoaded;
 
 	static std::string											_SelectedLanguageCode;
-	static const ucstring										_NotTranslatedValue16;
-	static const std::string									_NotTranslatedValue;
+	static const ucstring										_NotTranslatedValue;
 
 	/** Structure to hold contextual info during
 	 *	read of preprocessed file
@@ -264,7 +253,7 @@ private:
 	/// Init _LanguageCodes and _LanguageNames
 	static void initLanguages();
 
-	static bool loadFileIntoMap(const std::string &filename, StrMapContainer &dest, StrMapContainer16 &dest16);
+	static bool loadFileIntoMap(const std::string &filename, StrMapContainer &dest);
 
 	/// The internal read function, it does the real job of readTextFile
 	static void _readTextFile(const std::string &filename,

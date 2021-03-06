@@ -1,13 +1,5 @@
-/**
-* Build Soundbank
-* \file build_soundbank.cpp
-* \brief Build Soundbank
-* \date 2010-03-06 21:43GMT
-* \author Jan Boon (Kaetemi)
-*/
-
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
-// Copyright (C) 2010-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -37,6 +29,7 @@
 #include <nel/misc/log.h>
 #include <nel/misc/path.h>
 #include <nel/sound/u_audio_mixer.h>
+#include <nel/misc/sheet_id.h>
 
 // Project includes
 // ...
@@ -82,14 +75,13 @@ int main(int nNbArg, char **ppArgs)
 	
 	// add search paths
 	CPath::addSearchPath(leveldesignDir, true, false);
-	std::string relativeDfnDir = dfnDir; // only add dfn if not a subdir of leveldesignDir
-	if (!CPath::makePathRelative(leveldesignDir, dfnDir) || relativeDfnDir.size() < 2 || (relativeDfnDir[0] == '.' && relativeDfnDir[1] == '.'))
-		CPath::addSearchPath(dfnDir, true, false);
+	CPath::addSearchPath(dfnDir, true, false);
+	
+	// init sheet_id.bin
+	NLMISC::CSheetId::initWithoutSheet();
 
 	// build the sound bank
 	UAudioMixer::buildSoundBank(exportDir);
-	UAudioMixer::buildClusteredSoundGroupSheets(exportDir);
-	UAudioMixer::buildUserVarBindingSheets(exportDir);
 	
 	// and that's all folks
 	return EXIT_SUCCESS;

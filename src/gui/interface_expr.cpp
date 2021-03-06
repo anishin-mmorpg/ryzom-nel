@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -549,7 +545,7 @@ namespace NLGUI
 			case Boolean: return true;
 			case Integer: setBool(_IntegerValue != 0); return true;
 			case Double:  setBool(_DoubleValue != 0); return true;
-			case String:  return evalBoolean(_StringValue.c_str()) != NULL;
+			case String:  return evalBoolean(_StringValue.toString().c_str()) != NULL;
 			default: break;
 		}
 		return false;
@@ -565,7 +561,7 @@ namespace NLGUI
 			case Integer: return true;
 			case Double:  setInteger((sint64) _DoubleValue); return true;
 			case String:
-				if (evalNumber(_StringValue.c_str())) return toInteger();
+				if (evalNumber(_StringValue.toString().c_str())) return toInteger();
 				return false;
 			case RGBA:	setInteger((sint64) _RGBAValue); return true;
 			default: break;
@@ -582,7 +578,7 @@ namespace NLGUI
 			case Integer:	setDouble((double) _IntegerValue); return true;
 			case Double:	return true;
 			case String:
-				if (evalNumber(_StringValue.c_str())) return toBool();
+				if (evalNumber(_StringValue.toString().c_str())) return toBool();
 				return false;
 			case RGBA:	setDouble((double) _RGBAValue); return true;
 			default: break;
@@ -628,7 +624,7 @@ namespace NLGUI
 				return true;
 
 			case String:
-				setRGBA( NLMISC::CRGBA::stringToRGBA(_StringValue.c_str()));
+				setRGBA( NLMISC::CRGBA::stringToRGBA(_StringValue.toString().c_str()));
 				return true;
 
 			default:
@@ -870,15 +866,14 @@ namespace NLGUI
 	}
 
 	//==================================================================
-	const std::string &CInterfaceExprValue::getString() const
+	std::string CInterfaceExprValue::getString() const
 	{
 		if (_Type != String)
 		{
 			nlwarning("<CInterfaceExprValue::getString> bad type!");
-			static const std::string empty;
-			return empty;
+			return "";
 		}
-		return _StringValue;
+		return _StringValue.toString();
 	}
 
 	//==================================================================
@@ -895,6 +890,19 @@ namespace NLGUI
 		col.B = (uint8)((_RGBAValue>>16)&0xff);
 		col.A = (uint8)((_RGBAValue>>24)&0xff);
 		return col;
+	}
+
+
+	//==================================================================
+	const ucstring &CInterfaceExprValue::getUCString() const
+	{
+		if (_Type != String)
+		{
+			nlwarning("<CInterfaceExprValue::getString> bad type!");
+			static ucstring emptyString;
+			return emptyString;
+		}
+		return _StringValue;
 	}
 
 	//==================================================================

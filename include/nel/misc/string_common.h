@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2012  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2016-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -193,10 +189,6 @@ inline std::string toString(const sint32 &val) { return toString("%d", val); }
 inline std::string toString(const uint64 &val) { return toString("%" NL_I64 "u", val); }
 inline std::string toString(const sint64 &val) { return toString("%" NL_I64 "d", val); }
 
-#ifdef NL_OS_WINDOWS
-inline std::string toString(const wchar_t &val) { return toString(reinterpret_cast<const uint16 &>(val)); }
-#endif
-
 #ifdef NL_COMP_GCC
 #	if GCC_VERSION == 40102
 
@@ -250,14 +242,9 @@ inline bool fromString(const std::string &str, sint64 &val) { bool ret = sscanf(
 inline bool fromString(const std::string &str, float &val) { bool ret = sscanf(str.c_str(), "%f", &val) == 1; if (!ret) val = 0.0f; return ret; }
 inline bool fromString(const std::string &str, double &val) { bool ret = sscanf(str.c_str(), "%lf", &val) == 1; if (!ret) val = 0.0; return ret; }
 
-#ifdef NL_OS_WINDOWS
-inline bool fromString(const std::string &str, wchar_t &val) { return fromString(str, reinterpret_cast<uint16 &>(val)); }
-#endif
-
-/// Fast string to bool, reliably defined for strings starting with 0, 1, t, T, f, F, y, Y, n, N, and empty strings, anything else is undefined.
-///  - Kaetemi
-inline bool toBool(const char *str) { return str[0] == '1' || (str[0] & 0xD2) == 0x50; }
-inline bool toBool(const std::string &str) { return toBool(str.c_str()); } // Safe because first byte may be null
+// Fast string to bool, reliably defined for strings starting with 0, 1, t, T, f, F, y, Y, n, N, anything else is undefined.
+// (str[0] == '1' || (str[0] & 0xD2) == 0x50)
+//  - Kaetemi
 
 bool fromString(const std::string &str, bool &val);
 
@@ -269,43 +256,6 @@ inline bool fromString(const std::string &str, std::string &val) { val = str; re
 inline bool fromString(const std::string &str, uint &val) { return sscanf(str.c_str(), "%u", &val) == 1; }
 inline bool fromString(const std::string &str, sint &val) { return sscanf(str.c_str(), "%d", &val) == 1; }
 #endif // NL_COMP_VC6
-
-inline bool startsWith(const char *str, const char *prefix)
-{
-	for (int i = 0;; ++i)
-	{
-		if (str[i] != prefix[i] || str[i] == '\0')
-		{
-			return prefix[i] == '\0';
-		}
-	}
-}
-
-inline bool startsWith(const std::string &str, const char *prefix) { return startsWith(str.c_str(), prefix); }
-inline bool startsWith(const std::string &str, const std::string &prefix) { return startsWith(str.c_str(), prefix.c_str()); }
-
-inline bool endsWith(const char *str, size_t strLen, const char *suffix, size_t suffixLen)
-{
-	if (strLen < suffixLen)
-		return false;
-	int minLen = strLen < suffixLen ? strLen : suffixLen;
-	for (int i = 1; i <= minLen; ++i)
-		if (str[strLen - i] != suffix[suffixLen - i])
-			return false;
-	return true;
-}
-
-inline bool endsWith(const char *str, const char *suffix) { return endsWith(str, strlen(str), suffix, strlen(suffix)); }
-inline bool endsWith(const std::string &str, const char *suffix) { return endsWith(str.c_str(), str.size(), suffix, strlen(suffix)); }
-inline bool endsWith(const std::string &str, const std::string &suffix) { return endsWith(str.c_str(), str.size(), suffix.c_str(), suffix.size()); }
-
-// ****************************************************************************
-// Conversion of strings between
-// - UTF-8
-// - Local codepage (UTF-8 on Linux)
-// - TString (Local codepage or wide on Windows)
-// - Wide (wchar_t *, UTF-16 on Windows, UTF-32 on Linux)
-// ****************************************************************************
 
 // Convert local codepage to UTF-8
 // On Windows, the local codepage is undetermined

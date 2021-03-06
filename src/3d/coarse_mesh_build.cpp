@@ -117,7 +117,7 @@ bool CCoarseMeshBuild::buildBitmap (const std::vector<CCoarseMeshDesc>& coarseMe
 						if (texture->supportSharing())
 						{
 							// Get sharing name
-							name+=toLowerAscii(texture->getShareName());
+							name+=toLower(texture->getShareName());
 						}
 						else
 						{
@@ -477,7 +477,7 @@ void CCoarseMeshBuild::remapCoordinates (const std::vector<CCoarseMeshDesc>& coa
 						if (texture->supportSharing())
 						{
 							// Get sharing name
-							name+=toLowerAscii(texture->getShareName());
+							name+=toLower(texture->getShareName());
 						}
 						else
 						{

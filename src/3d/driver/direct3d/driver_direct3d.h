@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1546,13 +1542,11 @@ public:
 			Texture = NULL;
 			Level = 0;
 			CubeFace = 0;
-			TargetOwned = false;
 		}
 		IDirect3DSurface9	*Target;
 		ITexture			*Texture;
 		uint8				Level;
 		uint8				CubeFace;
-		bool				TargetOwned;
 		virtual void apply(CDriverD3D *driver);
 	};
 
@@ -2078,17 +2072,10 @@ public:
 		NL_D3D_CACHE_TEST(CacheTest_RenderTarget, _RenderTarget.Target != target)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
-			if (_RenderTarget.TargetOwned)
-			{
-				nlassert(_RenderTarget.Target);
-				_RenderTarget.Target->Release();
-			}
 			_RenderTarget.Target = target;
 			_RenderTarget.Texture = texture;
 			_RenderTarget.Level = level;
 			_RenderTarget.CubeFace = cubeFace;
-			_RenderTarget.TargetOwned = target;
-			target->AddRef();
 
 			touchRenderVariable (&_RenderTarget);
 
@@ -2333,7 +2320,6 @@ private:
 	sint32					_WindowY;
 	bool					_DestroyWindow;
 	bool					_Maximized;
-	bool					_WindowFocus;
 	bool					_HandlePossibleSizeChangeNextSize;
 	GfxMode					_CurrentMode;
 	uint					_Interval;
@@ -2748,8 +2734,8 @@ public:
 
 	bool convertBitmapToIcon(const NLMISC::CBitmap &bitmap, HICON &icon, uint iconWidth, uint iconHeight, uint iconDepth, const NLMISC::CRGBA &col = NLMISC::CRGBA::White, sint hotSpotX = 0, sint hotSpotY = 0, bool cursor = false);
 
-	virtual bool copyTextToClipboard(const std::string &text);
-	virtual bool pasteTextFromClipboard(std::string &text);
+	virtual bool copyTextToClipboard(const ucstring &text);
+	virtual bool pasteTextFromClipboard(ucstring &text);
 
 public:
 	#ifdef 	NL_DEBUG

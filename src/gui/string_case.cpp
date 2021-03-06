@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -20,7 +16,6 @@
 
 #include "stdpch.h"
 #include "nel/gui/string_case.h"
-#include "nel/misc/utf_string_view.h"
 
 #ifdef DEBUG_NEW
 #define new DEBUG_NEW
@@ -28,22 +23,32 @@
 
 namespace NLGUI
 {
-	inline bool isSeparator (char c)
+	inline bool isSeparator (ucchar c)
 	{
 		return (c == ' ') || (c == '\t') || (c == '\n') || (c == '\r');
 	}
 
-	inline bool isEndSentence (char c, char lastChar)
+	// ***************************************************************************
+
+	inline bool isEndSentence (ucstring& str, uint index)
 	{
 		// Ex: One sentence. Another sentence.
 		//                  ^
 		// Counterexample: nevrax.com
 		//                       ^
-		return ((c == ' ') || (c == '\n'))
-			&& ((lastChar == '.') || (lastChar == '!') || (lastChar == '?') || (lastChar == '\n'));
+		ucchar c = str[index];
+		if ((str[index] == ' ') || (str[index] == '\n'))
+		{
+			if (index < 1)
+				return false;
+			c = str[index-1];
+			return (c == '.') || (c == '!') || (c == '?');
+		}
+		return false;
 	}
 
-	void setCase(std::string &str, TCaseMode mode)
+
+	void setCase( ucstring &str, TCaseMode mode )
 	{
 		const uint length = (uint)str.length();
 		uint i;
@@ -53,96 +58,63 @@ namespace NLGUI
 		switch (mode)
 		{
 		case CaseLower:
-			str = NLMISC::toLower(str);
+			str = NLMISC::toLower (str);
 			break;
 		case CaseUpper:
-			str = NLMISC::toUpper(str);
+			str = NLMISC::toUpper (str);
 			break;
 		case CaseFirstStringLetterUp:
-		{
-			std::string res;
-			res.reserve(str.size() + (str.size() >> 2));
-			for (ptrdiff_t i = 0; i < (ptrdiff_t)str.size();)
+			for (i=0; i<length; i++)
 			{
-				char c = str[i];
-				if (!isSeparator(c))
+				if (!isSeparator (str[i]))
 				{
 					if (newString)
-						NLMISC::appendToTitle(res, str, i);
+						str[i] = NLMISC::toUpper (str[i]);
 					else
-						NLMISC::appendToLower(res, str, i);
+						str[i] = NLMISC::toLower (str[i]);
 					newString = false;
 				}
-				else
-				{
-					res += c;
-					++i;
-				}
 			}
-			str.swap(res);
 			break;
-		}
 		case CaseFirstSentenceLetterUp:
-		{
-			std::string res;
-			res.reserve(str.size() + (str.size() >> 2));
-			char lastChar = 0;
-			for (ptrdiff_t i = 0; i < (ptrdiff_t)str.size();)
+			for (i=0; i<length; i++)
 			{
-				char c = str[i];
-				if (isEndSentence(c, lastChar))
-				{
+				if (isEndSentence (str, i))
 					newSentence = true;
-					res += c;
-					++i;
-				}
 				else
 				{
 					if (newSentence)
-						NLMISC::appendToTitle(res, str, i);
+						str[i] = NLMISC::toUpper (str[i]);
 					else
-						NLMISC::appendToLower(res, str, i);
+						str[i] = NLMISC::toLower (str[i]);
 
-					if (!isSeparator(c))
+					if (!isSeparator (str[i]))
 						newSentence = false;
 				}
-				lastChar = c;
 			}
-			str.swap(res);
 			break;
-		}
 		case CaseFirstWordLetterUp:
-		{
-			std::string res;
-			res.reserve(str.size() + (str.size() >> 2));
-			char lastChar = 0;
-			for (ptrdiff_t i = 0; i < (ptrdiff_t)str.size();)
+			for (i=0; i<length; i++)
 			{
-				char c = str[i];
-				if (isSeparator(c) || isEndSentence(c, lastChar))
-				{
+				if (isSeparator (str[i]) || isEndSentence (str, i))
 					newWord = true;
-					res += c;
-					++i;
-				}
 				else
 				{
 					if (newWord)
-						NLMISC::appendToTitle(res, str, i);
+						str[i] = NLMISC::toUpper (str[i]);
 					else
-						NLMISC::appendToLower(res, str, i);
+						str[i] = NLMISC::toLower (str[i]);
 
 					newWord = false;
 				}
-				lastChar = c;
 			}
-			str.swap(res);
 			break;
-		}
 		default:
 			break;
 		}
 	}
+
 }
 
-/* end of file */
+
+

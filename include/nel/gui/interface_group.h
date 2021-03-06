@@ -1,9 +1,5 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
-// Copyright (C) 2010-2019  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -235,18 +231,18 @@ namespace NLGUI
 			REFLECT_LUA_METHOD("dumpSize", luaDumpSize);
 			REFLECT_LUA_METHOD("dumpEltsOrder", luaDumpEltsOrder);
 			REFLECT_LUA_METHOD("dumpGroups", luaDumpGroups);
-			REFLECT_STRING_REF ("left_click", getLeftClickHandler, setLeftClickHandler);
-			REFLECT_STRING_REF ("right_click", getRightClickHandler, setRightClickHandler);
-			REFLECT_STRING_REF ("left_click_params", getLeftClickHandlerParams, setLeftClickHandlerParams);
-			REFLECT_STRING_REF ("right_click_params", getRightClickHandlerParams, setRightClickHandlerParams);
-			REFLECT_STRING_REF ("on_active", getOnActiveHandler, setOnActiveHandler);
-			REFLECT_STRING_REF ("on_active_params", getOnActiveParams, setOnActiveParams);
-			REFLECT_STRING_REF ("on_deactive", getOnDeactiveHandler, setOnDeactiveHandler);
-			REFLECT_STRING_REF ("on_deactive_params", getOnDeactiveParams, setOnDeactiveParams);
-			REFLECT_STRING_REF ("on_enter", getAHOnEnter, setAHOnEnter);
-			REFLECT_STRING_REF ("on_enter_params", getAHOnEnterParams, setAHOnEnterParams);
-			REFLECT_STRING_REF ("on_escape", getAHOnEscape, setAHOnEscape);
-			REFLECT_STRING_REF ("on_escape_params", getAHOnEscapeParams, setAHOnEscapeParams);
+			REFLECT_STRING ("left_click", getLeftClickHandler, setLeftClickHandler);
+			REFLECT_STRING ("right_click", getRightClickHandler, setRightClickHandler);
+			REFLECT_STRING ("left_click_params", getLeftClickHandlerParams, setLeftClickHandlerParams);
+			REFLECT_STRING ("right_click_params", getRightClickHandlerParams, setRightClickHandlerParams);
+			REFLECT_STRING ("on_active", getOnActiveHandler, setOnActiveHandler);
+			REFLECT_STRING ("on_active_params", getOnActiveParams, setOnActiveParams);
+			REFLECT_STRING ("on_deactive", getOnDeactiveHandler, setOnDeactiveHandler);
+			REFLECT_STRING ("on_deactive_params", getOnDeactiveParams, setOnDeactiveParams);
+			REFLECT_STRING ("on_enter", getAHOnEnter, setAHOnEnter);
+			REFLECT_STRING ("on_enter_params", getAHOnEnterParams, setAHOnEnterParams);
+			REFLECT_STRING ("on_escape", getAHOnEscape, setAHOnEscape);
+			REFLECT_STRING ("on_escape_params", getAHOnEscapeParams, setAHOnEscapeParams);
 			REFLECT_SINT32 ("ofsx", getOfsX, setOfsX);
 			REFLECT_SINT32 ("ofsy", getOfsY, setOfsY);
 			REFLECT_BOOL("child_resize_w", getResizeFromChildW, setResizeFromChildW);
@@ -325,8 +321,6 @@ namespace NLGUI
 		void	deleteLUAEnvTable(bool recurse = false);
 		// Set the LUA script to execute at checkCoords time (empty to reset)
 		void	setLuaScriptOnDraw(const std::string &script);
-		// Get the LUA script executed at checkCoords time
-		inline	CStringShared getLuaScriptOnDraw() { return _LUAOnDraw; }
 		//
 		void	executeLuaScriptOnDraw();
 		// Set the LUA script to execute when a list of DB change (of forms: "@DB1,@DB2" ....). The dbList is the key

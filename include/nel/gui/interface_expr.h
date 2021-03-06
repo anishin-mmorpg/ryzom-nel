@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -60,15 +56,16 @@ namespace NLGUI
 		bool                   getBool() const;
 		sint64                 getInteger() const;
 		double                 getDouble() const;
-		const std::string	   &getString() const;
+		std::string			   getString() const;
 		NLMISC::CRGBA		   getRGBA() const;
+		const ucstring		  &getUCString() const;
 		CInterfaceExprUserType *getUserType() const;
 		// set
 		void               setBool(bool value) { clean(); _Type = Boolean; _BoolValue = value; }
 		void               setInteger(sint64 value) { clean(); _Type = Integer; _IntegerValue = value; }
 		void               setDouble(double value) { clean(); _Type = Double; _DoubleValue = value; }
 		void               setString(const std::string &value) { clean(); _Type = String; _StringValue = value; }
-		void               setString(const char *value) { clean(); _Type = String; _StringValue = value; }
+		void               setUCString(const ucstring &value) { clean(); _Type = String; _StringValue = value; }
 		void			   setRGBA(NLMISC::CRGBA value) { clean(); _Type = RGBA; _RGBAValue = (uint32)(value.R+(value.G<<8)+(value.B<<16)+(value.A<<24)); }
 		void               setUserType(CInterfaceExprUserType *value);
 		// reset this object to initial state (no type)
@@ -99,7 +96,7 @@ namespace NLGUI
 			CInterfaceExprUserType *_UserTypeValue;
 			uint32					_RGBAValue;
 		};
-		std::string					_StringValue; // well, can't fit in union, unless we do some horrible hack..
+		ucstring					_StringValue; // well, can't fit in union, unless we do some horrible hack..
 	private:
 		const char *evalBoolean(const char *expr);
 		const char *evalNumber(const char *expr);

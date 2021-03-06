@@ -1,12 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Matt RAYKOWSKI (sfb) <matt.raykowski@gmail.com>
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-// Copyright (C) 2015  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1971,12 +1965,12 @@ bool CDriverUser::setRenderTarget(class UTexture & uTex, uint32 x, uint32 y, uin
 
 	return result;
 }
-bool CDriverUser::copyTextToClipboard(const std::string &text)
+bool CDriverUser::copyTextToClipboard(const ucstring &text)
 {
 	return _Driver->copyTextToClipboard(text);
 }
 
-bool CDriverUser::pasteTextFromClipboard(std::string &text)
+bool CDriverUser::pasteTextFromClipboard(ucstring &text)
 {
 	return _Driver->pasteTextFromClipboard(text);
 }

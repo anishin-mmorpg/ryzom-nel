@@ -1,11 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Matt RAYKOWSKI (sfb) <matt.raykowski@gmail.com>
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -558,10 +553,10 @@ public:
 	// @}
 
 	// Copy a string to system clipboard.
-	virtual bool copyTextToClipboard(const std::string &text);
+	virtual bool copyTextToClipboard(const ucstring &text);
 
 	// Paste a string from system clipboard.
-	virtual bool pasteTextFromClipboard(std::string &text);
+	virtual bool pasteTextFromClipboard(ucstring &text);
 
 	virtual uint64	getSwapBufferCounter();
 

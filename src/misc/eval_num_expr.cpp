@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2016-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -773,7 +770,7 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 							case Exponent:
 								{
 									int exponent;
-									(void)frexp( arg0, &exponent);
+									frexp( arg0, &exponent);
 									value = (double)exponent;
 								}
 								break;
@@ -1032,13 +1029,13 @@ CEvalNumExpr::TReturnState CEvalNumExpr::evalExpression (double &finalResult, TT
 				v0 -= v1;
 				break;
 			case ULeftShift:
-				v0 = (double)(uint)(((uint)floor (v0 + 0.5))<<((uint)floor (v1 + 0.5)));
+				v0 = (double)(((uint)floor (v0 + 0.5))<<((uint)floor (v1 + 0.5)));
 				break;
 			case URightShift:
 				v0 = (double)(((uint)floor (v0 + 0.5))>>((uint)floor (v1 + 0.5)));
 				break;
 			case SLeftShift:
-				v0 = (double)(sint)(((sint)floor (v0 + 0.5))<<((sint)floor (v1 + 0.5)));
+				v0 = (double)(((sint)floor (v0 + 0.5))<<((sint)floor (v1 + 0.5)));
 				break;
 			case SRightShift:
 				v0 = (double)(((sint)floor (v0 + 0.5))>>((sint)floor (v1 + 0.5)));

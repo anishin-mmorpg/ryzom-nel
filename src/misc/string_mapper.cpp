@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -30,12 +27,13 @@ using namespace std;
 namespace NLMISC
 {
 
-CStringMapper CStringMapper::s_GlobalMapper;
+CStringMapper	CStringMapper::_GlobalMapper;
+
 
 // ****************************************************************************
 CStringMapper::CStringMapper()
 {
-	m_EmptyId = new string();
+	_EmptyId = new string();
 }
 
 // ****************************************************************************
@@ -48,54 +46,39 @@ CStringMapper *CStringMapper::createLocalMapper()
 TStringId CStringMapper::localMap(const std::string &str)
 {
 	if (str.empty())
-		return NULL;
+		return 0;
 
-	CAutoFastMutex autoMutex(&m_Mutex);
+	CAutoFastMutex	automutex(&_Mutex);
 
-	TStringTable::const_iterator it = m_StringTable.find((const std::string *)&str);
+	string *pStr = new string;
+	*pStr = str;
 
-	if (it == m_StringTable.end())
+	std::set<string*,CCharComp>::iterator it = _StringTable.find(pStr);
+
+	if (it == _StringTable.end())
 	{
-		string *pStr = new string(str);
-		m_StringTable.insert(pStr);
-		return pStr;
+		_StringTable.insert(pStr);
 	}
-	return (TStringId)(*it);
-}
-
-#ifdef NL_CPP14
-// ****************************************************************************
-TStringId CStringMapper::localMap(const char *str)
-{
-	if (!str[0])
-		return NULL;
-
-	CAutoFastMutex autoMutex(&m_Mutex);
-
-	TStringTable::const_iterator it = m_StringTable.find(str);
-
-	if (it == m_StringTable.end())
+	else
 	{
-		string *pStr = new string(str);
-		m_StringTable.insert(pStr);
-		return pStr;
+		delete pStr;
+		pStr = (*it);
 	}
-	return (TStringId)(*it);
+	return (TStringId)pStr;
 }
-#endif
 
 // ***************************************************************************
 void CStringMapper::localSerialString(NLMISC::IStream &f, TStringId &id)
 {
-	std::string str;
-	if (f.isReading())
+	std::string	str;
+	if(f.isReading())
 	{
 		f.serial(str);
-		id = localMap(str);
+		id= localMap(str);
 	}
 	else
 	{
-		str = localUnmap(id);
+		str= localUnmap(id);
 		f.serial(str);
 	}
 }
@@ -103,16 +86,17 @@ void CStringMapper::localSerialString(NLMISC::IStream &f, TStringId &id)
 // ****************************************************************************
 void CStringMapper::localClear()
 {
-	CAutoFastMutex autoMutex(&m_Mutex);
+	CAutoFastMutex	automutex(&_Mutex);
 
-	TStringTable::iterator it = m_StringTable.begin();
-	while (it != m_StringTable.end())
+	std::set<string*,CCharComp>::iterator it = _StringTable.begin();
+	while (it != _StringTable.end())
 	{
-		const std::string *ptrTmp = (*it);
+		string *ptrTmp = (*it);
 		delete ptrTmp;
 		it++;
 	}
-	m_StringTable.clear();
+	_StringTable.clear();
+	delete _EmptyId;
 }
 
 // ****************************************************************************

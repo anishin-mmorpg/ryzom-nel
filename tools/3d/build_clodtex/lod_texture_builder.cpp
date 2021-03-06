@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -138,9 +135,6 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRM &meshMRM, NL3D::CLodCha
 	const uint8			*srcPos= (const uint8*)vba.getVertexCoordPointer();
 	const uint8			*srcNormal= (const uint8*)vba.getNormalCoordPointer();
 	const uint8			*srcUV= (const uint8*)vba.getTexCoordPointer();
-	nlassert(srcPos);
-	nlassert(srcNormal);
-	nlassert(srcUV);
 	uint				vertexSize = VB.getVertexSize();
 	// For the more precise lod
 	uint	lodId= meshMRM.getNbLod()-1;

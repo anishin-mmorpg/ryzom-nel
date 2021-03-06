@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2011-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1271,7 +1268,7 @@ Value* get_patch_vertex_cf (Value** arg_list, int count)
 
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
-	MCHAR *message= _M("NeLGetPatchVertex [NeLPatchMesh] [PatchId] [VertexId]");
+	const MCHAR *message= _M("NeLGetPatchVertex [NeLPatchMesh] [PatchId] [VertexId]");
 	type_check(arg_list[0], MAXNode, message);
 	type_check(arg_list[1], Integer, message);
 	type_check(arg_list[2], Integer, message);

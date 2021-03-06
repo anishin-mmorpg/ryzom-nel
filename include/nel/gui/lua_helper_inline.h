@@ -1,9 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -263,8 +260,8 @@ inline lua_Integer CLuaState::toInteger(int index)
 	if (!isnum)
 	{
 		lua_Number d = lua_tonumber(_State, index);
+		nlwarning("Lua: Unable to convert Lua number %lf to integer", d);
 		res = (lua_Integer)d;
-		nlwarning("Lua: Converting lua_Number %lf to lua_Integer %i", d, (int)res);
 	}
 	return res;
 #else

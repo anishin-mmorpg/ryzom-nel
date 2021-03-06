@@ -1,11 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-// Copyright (C) 2014  Matthew LAGOE (Botanic) <cyberempires@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -197,7 +192,6 @@ CDriverD3D::CDriverD3D()
 	_BackBuffer = NULL;
 	_Maximized = false;
 	_HandlePossibleSizeChangeNextSize = false;
-	_WindowFocus = true;
 	_Interval = 1;
 	_AGPMemoryAllocated = 0;
 	_VRAMMemoryAllocated = 0;
@@ -1165,15 +1159,7 @@ void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPAR
 		}
 	}
 
-	if ((message == WM_SETFOCUS) || (message == WM_KILLFOCUS))
-	{
-		if (driver != NULL)
-		{
-			driver->_WindowFocus = (message == WM_SETFOCUS);
-		}
-	}
-
-	if (driver && driver->_EventEmitter.getNumEmitters() > 0)
+	if (driver->_EventEmitter.getNumEmitters() > 0)
 	{
 		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
 		// Process the message by the emitter
@@ -1225,28 +1211,11 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		D3DWndProc (pDriver, hWnd, message, wParam, lParam);
 	}
 
-	if (message == WM_SYSCOMMAND)
-	{
-		switch (wParam)
-		{
 #ifdef NL_DISABLE_MENU
-			// disable menu (F10, ALT and ALT+SPACE key doesn't freeze or open the menu)
-		case SC_KEYMENU:
+	// disable menu (F10, ALT and ALT+SPACE key doesn't freeze or open the menu)
+	if(message == WM_SYSCOMMAND && wParam == SC_KEYMENU)
+		return 0;
 #endif // NL_DISABLE_MENU
-
-			// Screensaver Trying To Start?
-		case SC_SCREENSAVE:
-
-			// Monitor Trying To Enter Powersave?
-		case SC_MONITORPOWER:
-
-			// Prevent From Happening
-			return 0;
-
-		default:
-			break;
-		}
-	}
 
 	// ace: if we receive close, exit now or it'll assert after
 	if(message == WM_CLOSE)
@@ -1264,12 +1233,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		}
 		return 0;
 	}
-
-#ifdef WM_UNICHAR
-	// https://docs.microsoft.com/en-us/windows/win32/inputdev/wm-unichar
-	if (message == WM_UNICHAR)
-		return (wParam == UNICODE_NOCHAR);
-#endif
 
 	return DefWindowProcW(hWnd, message, wParam, lParam);
 }
@@ -1402,7 +1365,6 @@ bool CDriverD3D::setDisplay(nlWindow wnd, const GfxMode& mode, bool show, bool r
 	// Reset window state
 	_Maximized = false;
 	_HandlePossibleSizeChangeNextSize = false;
-	_WindowFocus = true;
 
 	if (_HWnd)
 	{
@@ -3853,15 +3815,9 @@ void CDriverD3D::CLightState::apply(CDriverD3D *driver)
 void CDriverD3D::CRenderTargetState::apply(CDriverD3D *driver)
 {
 	H_AUTO_D3D(CDriverD3D_CRenderTargetState);
-	nlassert(TargetOwned); // Can only apply once!
-	driver->_DeviceInterface->SetRenderTarget(0, Target);
+	driver->_DeviceInterface->SetRenderTarget (0, Target);
 	driver->setupViewport(driver->_Viewport);
 	driver->setupScissor(driver->_Scissor);
-	if (TargetOwned)
-	{
-		Target->Release();
-		TargetOwned = false;
-	}
 }
 
 // ***************************************************************************
@@ -4018,12 +3974,12 @@ void CDriverD3D::findNearestFullscreenVideoMode()
 		}
 	}
 }
-bool CDriverD3D::copyTextToClipboard(const std::string &text)
+bool CDriverD3D::copyTextToClipboard(const ucstring &text)
 {
 	return _EventEmitter.copyTextToClipboard(text);
 }
 
-bool CDriverD3D::pasteTextFromClipboard(std::string &text)
+bool CDriverD3D::pasteTextFromClipboard(ucstring &text)
 {
 	return _EventEmitter.pasteTextFromClipboard(text);
 }

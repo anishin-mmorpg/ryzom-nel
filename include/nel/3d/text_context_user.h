@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -97,14 +94,13 @@ public:
 	 */
 	// @{
 	uint32 textPush(const char *format, ...)  ;
-	uint32 textPush(NLMISC::CUtfStringView sv)  ;
+	uint32 textPush(const ucstring &str)  ;
 	void setStringColor(uint32 i, CRGBA newCol);
 	void setStringSelection(uint32 i, uint32 selectStart, uint32 selectSize);
 	void resetStringSelection(uint32 i);
 	void erase(uint32 i)  ;
 	virtual	CStringInfo		getStringInfo (uint32 i);
-	virtual	CStringInfo		getStringInfo (NLMISC::CUtfStringView sv);
-	virtual	CStringInfo		getStringInfo (NLMISC::CUtfStringView sv, size_t len);
+	virtual	CStringInfo		getStringInfo (const ucstring &ucstr);
 
 	void clear()  ;
 	void printAt(float x, float y, uint32 i) ;
@@ -112,10 +108,10 @@ public:
 	void printClipAtUnProjected(URenderStringBuffer &renderBuffer, class NL3D::CFrustum &frustum, const NLMISC::CMatrix &scaleMatrix, float x, float y, float depth, uint32 i, float xmin, float ymin, float xmax, float ymax);
 	void printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax);
 
-	void printAt(float x, float y, NLMISC::CUtfStringView sv) ;
+	void printAt(float x, float y, const ucstring &ucstr) ;
 	void printfAt(float x, float y, const char * format, ...) ;
 
-	void render3D(const CMatrix &mat, NLMISC::CUtfStringView sv) ;
+	void render3D(const CMatrix &mat, const ucstring &ucstr) ;
 	void render3D(const CMatrix &mat, const char *format, ...) ;
 
 	float getLastXBound() const ;

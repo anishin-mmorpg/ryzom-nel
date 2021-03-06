@@ -68,8 +68,7 @@ else:
 		destFile = destDir + "/" + file[0:-len(".zonew")] + ".zonel"
 		if (needUpdateLogRemoveDest(log, srcFile, destFile)):
 			dependFile = dependDir + "/" + file[0:-len(".zonew")] + ".depend"
-			callParallelProcess([ ExecTimeout, str(ZoneLightBuildTimeout), ZoneLighter, srcFile, destFile, ActiveProjectDirectory + "/generated/properties.cfg", dependFile ])
-	flushParallelProcesses()
+			subprocess.call([ ExecTimeout, str(ZoneLightBuildTimeout), ZoneLighter, srcFile, destFile, ActiveProjectDirectory + "/generated/properties.cfg", dependFile ])
 printLog(log, "")
 
 # For each zone_light ig
@@ -95,8 +94,7 @@ else:
 			if (needUpdateLogRemoveDest(log, igsrcFile, destFile)):
 				srcFile = srcDir + "/" + file
 				dependFile = dependDir + "/" + file[0:-len(".zonel")] + ".depend"
-				callParallelProcess([ ExecTimeout, str(ZoneIgLightBuildTimeout), ZoneIgLighter, srcFile, destFile, ActiveProjectDirectory + "/generated/properties.cfg", dependFile ])
-	flushParallelProcesses()
+				subprocess.call([ ExecTimeout, str(ZoneIgLightBuildTimeout), ZoneIgLighter, srcFile, destFile, ActiveProjectDirectory + "/generated/properties.cfg", dependFile ])
 printLog(log, "")
 
 log.close()

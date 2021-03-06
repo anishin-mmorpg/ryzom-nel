@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -229,13 +226,13 @@ uint32 CTextContextUser::textPush(const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	return _TextContext.textPush(str) ;
+	return _TextContext.textPush(ucstring(str)) ;
 }
-uint32 CTextContextUser::textPush(NLMISC::CUtfStringView sv)
+uint32 CTextContextUser::textPush(const ucstring &str)
 {
 	H_AUTO2;
 
-	return _TextContext.textPush(sv) ;
+	return _TextContext.textPush(str) ;
 }
 void CTextContextUser::setStringColor(uint32 i, CRGBA newCol)
 {
@@ -275,23 +272,16 @@ UTextContext::CStringInfo		CTextContextUser::getStringInfo(uint32 i)
 
 	CComputedString		*cstr= _TextContext.getComputedString(i);
 	if(!cstr)
-		return CStringInfo(0, 0, 0, 0);
+		return CStringInfo(0, 0, 0);
 	else
-		return	CStringInfo(cstr->StringWidth, cstr->StringHeight, cstr->StringLine, cstr->Length);
+		return	CStringInfo(cstr->StringWidth, cstr->StringHeight, cstr->StringLine);
 }
-UTextContext::CStringInfo		CTextContextUser::getStringInfo(NLMISC::CUtfStringView sv)
+UTextContext::CStringInfo		CTextContextUser::getStringInfo(const ucstring &str)
 {
 	H_AUTO2;
 
-	_TextContext.computeStringInfo(sv, _CacheString);
-	return CStringInfo (_CacheString.StringWidth, _CacheString.StringHeight, _CacheString.StringLine, _CacheString.Length);
-}
-UTextContext::CStringInfo		CTextContextUser::getStringInfo(NLMISC::CUtfStringView sv, size_t len)
-{
-	H_AUTO2;
-
-	_TextContext.computeStringInfo(sv, _CacheString, len);
-	return CStringInfo (_CacheString.StringWidth, _CacheString.StringHeight, _CacheString.StringLine, _CacheString.Length);
+	_TextContext.computeStringInfo(str, _CacheString);
+	return CStringInfo (_CacheString.StringWidth, _CacheString.StringHeight, _CacheString.StringLine);
 }
 void CTextContextUser::clear()
 {
@@ -326,11 +316,11 @@ void CTextContextUser::printClipAtOld (float x, float y, uint32 i, float xmin, f
 	printClipAt(rdrBuffer, x, y ,i, xmin, ymin, xmax, ymax);
 	flushRenderBuffer(&rdrBuffer);
 }
-void CTextContextUser::printAt(float x, float y, NLMISC::CUtfStringView sv)
+void CTextContextUser::printAt(float x, float y, const ucstring &ucstr)
 {
 	H_AUTO2;
 
-	_TextContext.printAt(x, y, sv);
+	_TextContext.printAt(x, y, ucstr);
 	_DriverUser->restoreMatrixContext();
 }
 void CTextContextUser::printfAt(float x, float y, const char * format, ...)
@@ -340,16 +330,16 @@ void CTextContextUser::printfAt(float x, float y, const char * format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	_TextContext.printAt(x, y, str) ;
+	_TextContext.printAt(x, y, ucstring(str)) ;
 	_DriverUser->restoreMatrixContext();
 }
 
-void CTextContextUser::render3D(const CMatrix &mat, NLMISC::CUtfStringView sv)
+void CTextContextUser::render3D(const CMatrix &mat, const ucstring &ucstr)
 {
 	NL3D_HAUTO_RENDER_3D_TEXTCONTEXT;
 
 	CComputedString computedStr;
-	_TextContext.computeString(sv,computedStr);
+	_TextContext.computeString(ucstr,computedStr);
 
 	computedStr.render3D(*_Driver,mat);
 
@@ -362,7 +352,7 @@ void CTextContextUser::render3D(const CMatrix &mat, const char *format, ...)
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	render3D(mat, str);
+	render3D(mat, ucstring(str));
 
 	_DriverUser->restoreMatrixContext();
 }

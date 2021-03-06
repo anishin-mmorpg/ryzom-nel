@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -41,7 +38,7 @@ struct EFile : public EStream
 	EFile (const std::string& filename) : EStream( "Unknown file error in '"+filename+"'" ), Filename(filename) {}
 	EFile (const std::string& filename, const std::string& text, bool ) : EStream( text ), Filename(filename) {}
 
-	virtual ~EFile() NL_OVERRIDE {}
+	virtual ~EFile() throw() {}
 
 	std::string Filename;
 };
@@ -121,11 +118,6 @@ public:		// Advanced Usage.
 	// same function that in ifstream
 	// return a string separated by \n or eof, used to parsing text file
 	void getline (char *buffer, uint32 bufferSize);
-
-	// read whole file into a string. resulting buffer may contain NULL chars.
-	// internal read position is modified.
-	// return true on success, false on failure.
-	bool readAll(std::string &buffer);
 
 	// return the size of the file
 	uint32 getFileSize () const { return _FileSize; }

@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -21,7 +18,6 @@
 #define NLMAX_STRING_COMMON_H
 
 #include <nel/misc/ucstring.h>
-#include <nel/misc/string_common.h>
 
 #if (MAX_VERSION_MAJOR < 15)
 #define GET_OBJECT_NAME_CONST
@@ -38,7 +34,9 @@ static TSTR MaxTStrFromUtf8(const std::string &src)
 {
 	TSTR dst;
 #if (MAX_VERSION_MAJOR < 15)
-	dst = nlUtf8ToTStr(src);
+	ucstring uc;
+	uc.fromUtf8(src);
+	dst = (const mwchar_t *)uc.c_str();
 #else
 	dst.FromUTF8(src.c_str());
 #endif
@@ -48,7 +46,14 @@ static TSTR MaxTStrFromUtf8(const std::string &src)
 static std::string MaxTStrToUtf8(const TSTR& src)
 {
 #if (MAX_VERSION_MAJOR < 15)
-	return NLMISC::tStrToUtf8(src.data());
+#ifdef _UNICODE
+	ucstring uc(src.data());
+	return uc.toUtf8();
+#else
+	WStr ws = src;
+	ucstring uc((const ucchar *)ws.data());
+	return uc.toUtf8();
+#endif
 #else
 	return src.ToUTF8().data();
 #endif
@@ -56,7 +61,13 @@ static std::string MaxTStrToUtf8(const TSTR& src)
 
 static std::string MCharStrToUtf8(const MCHAR *src)
 {
-	return NLMISC::tStrToUtf8(src);
+#ifdef _UNICODE
+	ucstring uc((const ucchar *)src);
+	return uc.toUtf8();
+#else
+	ucstring uc((const ucchar *)WStr(src).data());
+	return uc.toUtf8();
+#endif
 }
 
 #endif /* #ifndef NLMAX_STRING_COMMON_H */

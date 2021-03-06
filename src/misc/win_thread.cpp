@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2012-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -66,9 +63,6 @@ static unsigned long __stdcall ProxyFunc (void *arg)
 
 	// Set the thread pointer in TLS memory
 	nlverify (TlsSetValue (TLSThreadPointer, (void*)parent) != 0);
-
-	// Attach exception handler
-	attachExceptionHandler();
 
 	// Run the thread
 	parent->Runnable->run();
@@ -209,11 +203,11 @@ void CWinThread::start ()
 	ThreadHandle = (void *) ::CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
 //	nldebug("NLMISC: thread %x started for runnable '%x'", typeid( Runnable ).name());
 //	OutputDebugString(toString(NL_LOC_MSG " NLMISC: thread %x started for runnable '%s'\n", ThreadId, typeid( *Runnable ).name()).c_str());
+	SetThreadPriorityBoost (ThreadHandle, TRUE); // FALSE == Enable Priority Boost
 	if (ThreadHandle == NULL)
 	{
 		throw EThread ( "Cannot create new thread" );
 	}
-	SetThreadPriorityBoost (ThreadHandle, TRUE); // FALSE == Enable Priority Boost
 
 	_SuspendCount = 0;
 }

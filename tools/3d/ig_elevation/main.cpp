@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -65,7 +62,6 @@ struct SExportOptions
 	float	ZFactor1;
 	string	HeightMapFile2;
 	float	ZFactor2;
-	bool	ExtendCoords;
 	string	LandFile;
 
 	// -----------------------------------------------------------------------
@@ -105,9 +101,6 @@ struct SExportOptions
 
 			CConfigFile::CVar &cvZFactor2 = cf.getVar("ZFactor2");
 			ZFactor2 = cvZFactor2.asFloat();
-
-			CConfigFile::CVar &cvExtendCoords = cf.getVar("ExtendCoords");
-			ExtendCoords = cvExtendCoords.asFloat();
 
 			CConfigFile::CVar &cvLandFile = cf.getVar("LandFile");
 			LandFile = cvLandFile.asString();
@@ -218,19 +211,13 @@ static float  getHeightMapZ(float x, float y, const CZoneLimits &zl, const SExpo
 	sint32 SizeX = zl._ZoneMaxX - zl._ZoneMinX + 1;
 	sint32 SizeY = zl._ZoneMaxY - zl._ZoneMinY + 1;
 
+	clamp (x, options.CellSize * zl._ZoneMinX, options.CellSize * (zl._ZoneMaxX + 1));
+	clamp (y, options.CellSize * zl._ZoneMinY, options.CellSize * (zl._ZoneMaxY + 1));
+
 	if (heightMap1 != NULL)
 	{
-		float xc = (x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX);
-		float yc = 1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY));
-		if (options.ExtendCoords)
-		{
-			uint32 w = heightMap1->getWidth(), h = heightMap1->getHeight();
-			xc -= .5f / (float)w;
-			yc -= .5f / (float)h;
-			xc = xc * (float)(w + 1) / (float)w;
-			yc = yc * (float)(h + 1) / (float)h;
-		}
-		color = heightMap1->getColor(xc, yc);
+		color = heightMap1->getColor (	(x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX), 
+										1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY)));
 		color *= 255.f;
 		deltaZ = color.A;
 		deltaZ = deltaZ - 127.0f; // Median intensity is 127
@@ -239,17 +226,8 @@ static float  getHeightMapZ(float x, float y, const CZoneLimits &zl, const SExpo
 
 	if (heightMap2 != NULL)
 	{
-		float xc = (x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX);
-		float yc = 1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY));
-		if (options.ExtendCoords)
-		{
-			uint32 w = heightMap2->getWidth(), h = heightMap2->getHeight();
-			xc -= .5f / (float)w;
-			yc -= .5f / (float)h;
-			xc = xc * (float)(w + 1) / (float)w;
-			yc = yc * (float)(h + 1) / (float)h;
-		}
-		color = heightMap2->getColor(xc, yc);
+		color = heightMap2->getColor (	(x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX), 
+										1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY)));
 		color *= 255.f;
 		deltaZ2 = color.A;
 		deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
@@ -275,20 +253,19 @@ int main(int nNbArg, char**ppArgs)
 		printf ("InputIGDir = \"ig_land_max\";\n");
 		printf ("OutputIGDir = \"ig_land_max_elev\";\n");
 		printf ("CellSize = 160.0;\n");
-		printf ("HeightMapFile1 = \"R:/graphics/landscape/ligo/jungle/big.tga\";\n");
+		printf ("HeightMapFile1 = \"w:/database/landscape/ligo/jungle/big.tga\";\n");
 		printf ("ZFactor1 = 1.0;\n");
-		printf ("HeightMapFile2 = \"R:/graphics/landscape/ligo/jungle/noise.tga\";\n");
+		printf ("HeightMapFile2 = \"w:/database/landscape/ligo/jungle/noise.tga\";\n");
 		printf ("ZFactor2 = 0.5;\n");
-		printf ("ExtendCoords = 0;\n");
 		printf ("LandFile = \"w:/matis.land\";\n");
 
-		return EXIT_FAILURE;
+		return -1;
 	}
 
 	SExportOptions options;
 	if (!options.load(ppArgs[1]))
 	{
-		return EXIT_FAILURE;
+		return -1;
 	}
 
 	// Get all ig files in the input directory and elevate to the z of the double heightmap
@@ -373,7 +350,7 @@ int main(int nNbArg, char**ppArgs)
 	vector<string> vAllFiles;
 	for(uint i = 0, len = (uint)vAllFilesUnfiltered.size(); i < len; ++i)
 	{
-		if (toLowerAscii(CFile::getExtension(vAllFilesUnfiltered[i])) == "ig")
+		if (toLower(CFile::getExtension(vAllFilesUnfiltered[i])) == "ig")
 		{
 			vAllFiles.push_back(vAllFilesUnfiltered[i]);
 		}
@@ -381,7 +358,7 @@ int main(int nNbArg, char**ppArgs)
 
 	for (uint32 i = 0; i < vAllFiles.size(); ++i)
 	{
-		CInstanceGroup *pIG = LoadInstanceGroup (vAllFiles[i]);
+		CInstanceGroup *pIG = LoadInstanceGroup (CPath::standardizePath(options.InputIGDir) + vAllFiles[i]);
 
 		if (pIG != NULL)
 		{
@@ -453,13 +430,11 @@ int main(int nNbArg, char**ppArgs)
 			pIGout->build (vGlobalPos, IA, Clusters, Portals, PLN);
 			pIGout->enableRealTimeSunContribution(realTimeSunContribution);
 
-			std::string outFilePath = CPath::standardizePath(options.OutputIGDir, true) + CFile::getFilename(vAllFiles[i]);
-			nldebug("Writing %s...", outFilePath.c_str());
-			SaveInstanceGroup(outFilePath, pIGout);
+			SaveInstanceGroup (CPath::standardizePath(options.OutputIGDir) + vAllFiles[i], pIGout);
 
 			delete pIG;
 		}
 	}
 
-	return EXIT_SUCCESS;
+	return 1;
 }

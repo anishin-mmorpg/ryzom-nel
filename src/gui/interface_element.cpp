@@ -1,9 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1028,16 +1025,21 @@ namespace NLGUI
 	}
 
 	// ------------------------------------------------------------------------------------------------
-	bool CInterfaceElement::convertBool (const char *ptr)
+	bool			CInterfaceElement::convertBool (const char *ptr)
 	{
-		return NLMISC::toBool(ptr);
+		std::string str = toLower(ptr);
+		bool b = false;
+		fromString( str, b );
+		return b;
 	}
 
 	// ------------------------------------------------------------------------------------------------
 	NLMISC::CVector CInterfaceElement::convertVector (const char *ptr)
 	{
 		float x = 0.0f, y = 0.0f, z = 0.0f;
+
 		sscanf (ptr, "%f %f %f", &x, &y, &z);
+
 		return CVector(x,y,z);
 	}
 

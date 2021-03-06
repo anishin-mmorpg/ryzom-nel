@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -24,6 +21,7 @@
 #include "nel/misc/string_mapper.h"
 #include "nel/3d/ps_located.h"
 #include "nel/3d/ps_attrib.h"
+#include "nel/misc/sheet_id.h"
 
 
 
@@ -66,13 +64,13 @@ public:
 	virtual void				step(TPSProcessPass pass);
 
 	/// set the name of the sound
-	void						setSoundName(const NLMISC::TStringId &soundName)
+	void						setSoundName(const NLMISC::CSheetId &soundName)
 	{
 		_SoundName = soundName;
 	}
 
 	/// get the name of the sound
-	const NLMISC::TStringId		&getSoundName(void) const
+	const NLMISC::CSheetId		&getSoundName(void) const
 	{
 		return _SoundName;
 	}
@@ -164,7 +162,7 @@ protected:
 	void					removeAllSources();
 
 	CPSAttrib<UPSSoundInstance *>	_Sounds;
-	NLMISC::TStringId				_SoundName;
+	NLMISC::CSheetId				_SoundName;
 	float							_Gain;
 	CPSAttribMaker<float> *			_GainScheme;
 	float							_Pitch;

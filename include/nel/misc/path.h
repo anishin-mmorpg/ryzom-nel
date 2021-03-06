@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2015  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2014-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -78,9 +74,6 @@ public:
 
 	/** Same as AddSearchPath but with a big file "c:/test.nbf" all files name contained in the big file will be included  (the extention (Nel Big File) is used to know that it's a big file) */
 	void			addSearchBigFile (const std::string &filename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
-	
-	/** Sale but for .snp (Streamed NeL Package) */
-	void			addSearchStreamedPackage (const std::string &filename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
 
 	/** Same as AddSearchPath but with a xml pack file "c:/test.xml_pack" all files name contained in the xml pack will be included   */
 	void			addSearchXmlpackFile (const std::string &sXmlpackFilename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
@@ -377,9 +370,6 @@ public:
 
 	/** Same as AddSearchPath but with a big file "c:/test.nbf" all files name contained in the big file will be included  (the extention (Nel Big File) is used to know that it's a big file) */
 	static void			addSearchBigFile (const std::string &filename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
-
-	/** Same but Streamed Package */
-	static void			addSearchStreamedPackage (const std::string &filename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
 
 	/** Same as AddSearchPath but with a xml pack file "c:/test.xml_pack" all files name contained in the xml pack will be included   */
 	static void			addSearchXmlpackFile (const std::string &sXmlpackFilename, bool recurse, bool alternative, class NLMISC::IProgressCallback *progressCallBack = NULL);
@@ -731,17 +721,10 @@ struct CFile
 	static bool	createDirectoryTree(const std::string &dirname);
 
 	/** Try to set the file access to read/write if not already set.
-	 * On linux/macOS also set +x on directory.
 	 * return true if the file doesn't exist or if the file already have RW access.
 	 * \return true if RW access is granted
 	 */
 	static bool	setRWAccess(const std::string &filename);
-
-	/** Try to set +x bit on linux/macOS to make file executable. no-op on Windows
-	 * On Windows, always returns true, even if file does not exist.
-	 * \return true if file exists and +x was set, false if operation failed.
-	 */
-	static bool setExecutable(const std::string &filename);
 
 	/** Delete a file if possible (change the write access if possible)
 	* \return true if the delete occurs.

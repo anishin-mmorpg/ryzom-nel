@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -41,7 +38,6 @@ CFixedSizeAllocator::CFixedSizeAllocator(uint numBytesPerBlock, uint numBlockPer
 	nlassert(_NumBytesPerBlock >= numBytesPerBlock);
 	_NumBlockPerChunk = std::max(numBlockPerChunk, (uint) 3);
 	_NumAlloc = 0;
-	_SpareMem = NULL;
 }
 
 // *****************************************************************************************************************
@@ -49,22 +45,16 @@ CFixedSizeAllocator::~CFixedSizeAllocator()
 {
 	if (_NumAlloc != 0)
 	{
-#ifdef NL_DEBUG
-		nlwarning("%d blocks were not freed, leaking memory", (int) _NumAlloc);
-#endif
+		#ifdef NL_DEBUG
+			nlwarning("%d blocks were not freed", (int) _NumAlloc);
+		#endif
+		return;
 	}
-	else
+	if (_NumChunks > 0)
 	{
-		if (_NumChunks > 0)
-		{
-			nlassert(_NumChunks == 1);
-			// delete the left chunk. This should force all the left nodes to be removed from the empty list
-			delete _FreeSpace->Chunk;
-		}
-	}
-	if (_SpareMem)
-	{
-		aligned_free(_SpareMem);
+		nlassert(_NumChunks == 1);
+		// delete the left chunk. This should force all the left nodes to be removed from the empty list
+		delete _FreeSpace->Chunk;
 	}
 }
 
@@ -122,10 +112,7 @@ CFixedSizeAllocator::CChunk::~CChunk()
 	nlassert(NumFreeObjs == 0);
 	nlassert(Allocator->_NumChunks > 0);
 	-- (Allocator->_NumChunks);
-	if (Allocator->_SpareMem)
-		aligned_free(Mem); //delete[] Mem;
-	else
-		Allocator->_SpareMem = Mem;
+	aligned_free(Mem); //delete[] Mem;
 }
 
 // *****************************************************************************************************************
@@ -135,15 +122,7 @@ void CFixedSizeAllocator::CChunk::init(CFixedSizeAllocator *alloc)
 	nlassert(alloc != NULL);
 	Allocator = alloc;
 	//
-	if (Allocator->_SpareMem)
-	{
-		Mem = Allocator->_SpareMem;
-		Allocator->_SpareMem = NULL;
-	}
-	else
-	{
-		Mem = (uint8 *)aligned_malloc(getBlockSizeWithOverhead() * alloc->getNumBlockPerChunk(), NL_DEFAULT_MEMORY_ALIGNMENT); // new uint8[getBlockSizeWithOverhead() * alloc->getNumBlockPerChunk()];
-	}
+	Mem = (uint8 *)aligned_malloc(getBlockSizeWithOverhead() * alloc->getNumBlockPerChunk(), NL_DEFAULT_MEMORY_ALIGNMENT); // new uint8[getBlockSizeWithOverhead() * alloc->getNumBlockPerChunk()];
 	//
 	getNode(0).Chunk = this;
 	getNode(0).Next = &getNode(1);

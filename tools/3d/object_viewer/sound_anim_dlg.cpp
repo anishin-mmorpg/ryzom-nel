@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -128,18 +125,18 @@ void CSoundAnimDlg::updateSounds()
 {
 	if (_SelectedMarker != 0)
 	{
-		vector<NLMISC::TStringId> sounds;
+		vector<NLMISC::CSheetId> sounds;
 
 		_SelectedMarker->getSounds(sounds);
 
 		CListBox* list = (CListBox*) GetDlgItem(IDC_SOUND_ANIM_LIST);
 		list->ResetContent();
 
-		vector<NLMISC::TStringId>::iterator iter;
+		vector<NLMISC::CSheetId>::iterator iter;
 
 		for (iter = sounds.begin(); iter != sounds.end(); iter++)
 		{
-			list->AddString(nlUtf8ToTStr(CStringMapper::unmap(*iter).c_str()));
+			list->AddString(nlUtf8ToTStr((*iter).toString()));
 		}
 
 		list->UpdateData();
@@ -153,7 +150,7 @@ void CSoundAnimDlg::OnAddSound()
 	if (_SelectedMarker != 0)
 	{
 //		CPickSound::TNameVect names;
-		vector<NLMISC::TStringId>	names;
+		vector<NLMISC::CSheetId>	names;
 		
 
 		NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();
@@ -184,7 +181,7 @@ void CSoundAnimDlg::OnRemoveSound()
 
 		if (list->GetText(list->GetCurSel(), s) != LB_ERR)
 		{
-			_SelectedMarker->removeSound(CStringMapper::map(tStrToUtf8(s)));
+			_SelectedMarker->removeSound(NLMISC::CSheetId(tStrToUtf8(s), "sound"));
 			updateSounds();
 		}
 	}

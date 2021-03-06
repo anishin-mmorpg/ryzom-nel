@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -72,7 +69,7 @@ bool	CPrimChecker::build(const string &primitivesPath, const string &igLandPath,
 	// Init ligo
 	if (!LigoConfig.readPrimitiveClass ("world_editor_classes.xml", false))
 	{
-		// Should be in R:\leveldesign\world_edit_files
+		// Should be in l:\leveldesign\world_edit_files
 		nlwarning ("Can't load ligo primitive config file world_editor_classes.xml");
 		return false;
 	}
@@ -336,19 +333,13 @@ void	CPrimChecker::render(CPrimZone *zone, uint8 bits)
  */
 void	CPrimChecker::render(const CPolygon &poly, uint16 value)
 {
-	static const sint centerOffset = 20480; // zones are max 40960
-	CPolygon polyOffset = poly;
-	for (ptrdiff_t i = 0; i < (ptrdiff_t)polyOffset.Vertices.size(); ++i)
-		// center to computeBorders range (-32k to 32k)
-		polyOffset.Vertices[i] += CVector(-centerOffset, centerOffset, 0);
-
 	list<CPolygon>		convex;
 
 	// divide poly in convex polys
-	if (!polyOffset.toConvexPolygons(convex, CMatrix::Identity))
+	if (!poly.toConvexPolygons(convex, CMatrix::Identity))
 	{
 		convex.clear();
-		CPolygon	reverse = polyOffset;
+		CPolygon	reverse = poly;
 		std::reverse(reverse.Vertices.begin(), reverse.Vertices.end());
 		if (!reverse.toConvexPolygons(convex, CMatrix::Identity))
 			return;
@@ -363,7 +354,6 @@ void	CPrimChecker::render(const CPolygon &poly, uint16 value)
 		sint						ymin;
 
 		convex2d.computeBorders(rasterized, ymin);
-		ymin -= centerOffset; // uncenter
 
 		sint	dy;
 		for (dy=0; dy<(sint)rasterized.size(); ++dy)
@@ -372,19 +362,19 @@ void	CPrimChecker::render(const CPolygon &poly, uint16 value)
 
 			for (x=rasterized[dy].first; x<=rasterized[dy].second; ++x)
 			{
-				uint8	prevBits = _Grid.get((uint)x + centerOffset, (uint)(ymin + dy));
+				uint8	prevBits = _Grid.get((uint)x, (uint)(ymin+dy));
 
 				// only set if there was not a water shape there or if previous was lower
 				if ((prevBits & Water) != 0)
 				{
-					uint16	prevWS = _Grid.index((uint)x + centerOffset, (uint)(ymin + dy));
+					uint16	prevWS = _Grid.index((uint)x, (uint)(ymin+dy));
 
 					if (_WaterHeight[value] < _WaterHeight[prevWS])
 						continue;
 				}
 
-				_Grid.index((uint)x + centerOffset, (uint)(ymin + dy), value);
-				_Grid.set((uint)x + centerOffset, (uint)(ymin + dy), Water);
+				_Grid.index((uint)x, (uint)(ymin+dy), value);
+				_Grid.set((uint)x, (uint)(ymin+dy), Water);
 			}
 		}
 	}
@@ -396,19 +386,13 @@ void	CPrimChecker::render(const CPolygon &poly, uint16 value)
  */
 void	CPrimChecker::renderBits(const CPolygon &poly, uint8 bits)
 {
-	static const sint centerOffset = 20480; // zones are max 40960
-	CPolygon polyOffset = poly;
-	for (ptrdiff_t i = 0; i < (ptrdiff_t)polyOffset.Vertices.size(); ++i)
-		// center to computeBorders range (-32k to 32k)
-		polyOffset.Vertices[i] += CVector(-centerOffset, centerOffset, 0);
-
 	list<CPolygon>		convex;
 
 	// divide poly in convex polys
-	if (!polyOffset.toConvexPolygons(convex, CMatrix::Identity))
+	if (!poly.toConvexPolygons(convex, CMatrix::Identity))
 	{
 		convex.clear();
-		CPolygon	reverse = polyOffset;
+		CPolygon	reverse = poly;
 		std::reverse(reverse.Vertices.begin(), reverse.Vertices.end());
 		if (!reverse.toConvexPolygons(convex, CMatrix::Identity))
 			return;
@@ -423,7 +407,6 @@ void	CPrimChecker::renderBits(const CPolygon &poly, uint8 bits)
 		sint						ymin;
 
 		convex2d.computeBorders(rasterized, ymin);
-		ymin -= centerOffset; // uncenter
 
 		sint	dy;
 		for (dy=0; dy<(sint)rasterized.size(); ++dy)
@@ -432,7 +415,7 @@ void	CPrimChecker::renderBits(const CPolygon &poly, uint8 bits)
 
 			for (x=rasterized[dy].first; x<=rasterized[dy].second; ++x)
 			{
-				_Grid.set((uint)x + centerOffset, (uint)(ymin + dy), bits);
+				_Grid.set((uint)x, (uint)(ymin+dy), bits);
 			}
 		}
 	}

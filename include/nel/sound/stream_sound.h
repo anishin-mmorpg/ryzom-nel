@@ -1,8 +1,4 @@
-// NeL - MMORPG Framework <https://wiki.ryzom.dev/>
-// Copyright (C) 2010  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Matt RAYKOWSKI (sfb) <matt.raykowski@gmail.com>
+// NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify

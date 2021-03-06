@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -30,7 +26,6 @@
 #include "nel/misc/types_nl.h"
 #include "nel/gui/interface_common.h"
 #include "nel/gui/interface_options.h"
-#include "nel/gui/interface_group.h"
 #include "nel/gui/event_descriptor.h"
 #include "nel/3d/u_camera.h"
 #include "nel/gui/parser.h"
@@ -269,14 +264,6 @@ namespace NLGUI
 		CViewPointerBase* getPointer(){ return _Pointer; }
 		void setPointer( CViewPointerBase *pointer ){ _Pointer = pointer; }
 
-		// If > 0, snap window to others closer than distance
-		void setWindowSnapDistance(uint32 d) { _WindowSnapDistance = d; }
-		uint32 getWindowSnapDistance() const { return _WindowSnapDistance; }
-
-		// If true, only snap when shift is held down
-		void setWindowSnapInvert(bool b) { _WindowSnapInvert = b; }
-		bool getWindowSnapInvert() const { return _WindowSnapInvert; }
-
 		/**
 		 * get the window under a spot
 		 * \param : X coord of the spot
@@ -318,9 +305,6 @@ namespace NLGUI
 		
 		void drawOverExtendViewText();
 
-		// Snap to closest visible window border if snapping is enabled
-		void snapIfClose(CInterfaceGroup *group);
-
 		// Internal : adjust a tooltip with respect to its parent. Returns the number of coordinate that were clamped
 		// against the screen border
 		uint adjustTooltipPosition( CCtrlBase *newCtrl, CInterfaceGroup *win, THotSpot ttParentRef,
@@ -333,8 +317,8 @@ namespace NLGUI
 		void updateTooltipCoords(CCtrlBase *newCtrl);
 		
 		/// for ContextHelp action handler only: set the result name
-		void setContextHelpText( const std::string &text ){ _ContextHelpText = text; }
-		std::string& getContextHelpText(){ return _ContextHelpText; }
+		void setContextHelpText( const ucstring &text ){ _ContextHelpText = text; }
+		ucstring& getContextHelpText(){ return _ContextHelpText; }
 		
 		/// force disable the context help
 		void disableContextHelp();
@@ -626,7 +610,7 @@ namespace NLGUI
 
 		SInterfaceTimes interfaceTimes;
 
-		std::string _ContextHelpText;
+		ucstring _ContextHelpText;
 		bool _ContextHelpActive;
 
 		bool inGame;
@@ -634,9 +618,6 @@ namespace NLGUI
 		bool _MouseOverWindow;
 
 		CEventDescriptorKey lastKeyEvent;
-
-		uint32 _WindowSnapDistance;
-		bool   _WindowSnapInvert;
 
 		uint32 _ScreenH;
 		uint32 _ScreenW;

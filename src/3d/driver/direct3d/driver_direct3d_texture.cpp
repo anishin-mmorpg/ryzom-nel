@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2012-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1084,7 +1081,6 @@ void CDriverD3D::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 	swap(t0->Height, t1->Height);
 	swap(t0->SrcCompressed, t1->SrcCompressed);
 	swap(t0->IsCube, t1->IsCube);
-	swap(t0->RenderTarget, t1->RenderTarget);
 	swap(t0->Levels, t1->Levels);
 	swap(t0->FirstMipMap, t1->FirstMipMap);
 	swap(t0->TextureMemory, t1->TextureMemory);

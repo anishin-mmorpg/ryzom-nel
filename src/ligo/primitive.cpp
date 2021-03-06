@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1250,16 +1246,15 @@ const	IPrimitive	*IPrimitive::getPrimitive	(const	std::string	&absoluteOrRelativ
 			childName=path.substr(0,indexStr);
 			path.erase(0, indexStr);
 		}
-		childName=toUpperAscii(childName);
+		childName=toUpper(childName);
 		const	IPrimitive*child=NULL;
 		uint	childIndex;
 		for	(childIndex=0;childIndex<cursor->getNumChildren();childIndex++)
 		{
 			cursor->getChild(child,childIndex);
-			nlassert(child);
 			string	name;
 			if	(	child->getPropertyByName("class", name)
-				&&	toUpperAscii(name)==childName	)
+				&&	toUpper(name)==childName	)
 				break;
 		}
 		if	(childIndex>=cursor->getNumChildren())

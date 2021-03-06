@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -35,26 +31,26 @@ namespace NLGUI
 
 	CViewTextFormated::IViewTextFormatter *CViewTextFormated::textFormatter = NULL;
 
-	std::string CViewTextFormated::getProperty(const std::string &name) const
-    {
-		if (name == "format")
+	std::string CViewTextFormated::getProperty( const std::string &name ) const
+	{
+		if( name == "format" )
 		{
-			return getFormatString();
+			return getFormatString().toString();
 		}
 		else
-			return CViewText::getProperty(name);
-    }
+			return CViewText::getProperty( name );
+	}
 
-    void CViewTextFormated::setProperty(const std::string &name, const std::string &value)
-    {
-	    if (name == "format")
-	    {
-		    setFormatString(value);
-		    return;
-	    }
-	    else
-		    CViewText::setProperty(name, value);
-    }
+	void CViewTextFormated::setProperty( const std::string &name, const std::string &value )
+	{
+		if( name == "format" )
+		{
+			setFormatString( value );
+			return;
+		}
+		else
+			CViewText::setProperty( name, value );
+	}
 
 	xmlNodePtr CViewTextFormated::serialize( xmlNodePtr parentNode, const char *type ) const
 	{
@@ -74,9 +70,9 @@ namespace NLGUI
 		if (!CViewText::parse(cur, parentGroup)) return false;
 		CXMLAutoPtr prop((const char*) xmlGetProp( cur, (xmlChar*)"format" ));
 		if (prop)
-			setFormatString((const char *)prop);
+			setFormatString(ucstring((const char *) prop));
 		else
-			setFormatString("$t");
+			setFormatString(ucstring("$t"));
 		return true;
 	}
 
@@ -84,8 +80,8 @@ namespace NLGUI
 	void CViewTextFormated::checkCoords()
 	{
 		if (!getActive()) return;
-		std::string formatedResult;
-		formatedResult = formatString(_FormatString, std::string());
+		ucstring formatedResult;
+		formatedResult = formatString(_FormatString, ucstring(""));
 
 		//
 		setText (formatedResult);
@@ -93,18 +89,17 @@ namespace NLGUI
 	}
 
 	// ****************************************************************************
-	void CViewTextFormated::setFormatString(const std::string &format)
+	void CViewTextFormated::setFormatString(const ucstring &format)
 	{
-		if (NLMISC::startsWith(format, "ui"))
-			_FormatString = NLMISC::CI18N::get(format);
-		else
-			_FormatString = format;
+		_FormatString = format;
+		if ( (_FormatString.size()>2) && (_FormatString[0] == 'u') && (_FormatString[1] == 'i'))
+			_FormatString = NLMISC::CI18N::get (format.toString());
 	}
 
 	// ****************************************************************************
-	std::string CViewTextFormated::formatString(const std::string &inputString, const std::string &paramString)
+	ucstring CViewTextFormated::formatString(const ucstring &inputString, const ucstring &paramString)
 	{
-		std::string formatedResult;
+		ucstring formatedResult;
 
 		if( textFormatter == NULL )
 			formatedResult = inputString;

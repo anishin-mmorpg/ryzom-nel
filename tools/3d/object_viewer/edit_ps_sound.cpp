@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -162,7 +159,7 @@ END_MESSAGE_MAP()
 void CEditPSSound::OnBrowseSound() 
 {
 //	CPickSound::TNameVect names;
-	vector<NLMISC::TStringId>	names;
+	vector<NLMISC::CSheetId> names;
 	
 
 	NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer();
@@ -175,7 +172,7 @@ void CEditPSSound::OnBrowseSound()
 
 	if (ps.DoModal() == IDOK)
 	{
-		m_SoundName = NLMISC::CStringMapper::unmap(ps.getName()).c_str();
+		m_SoundName = ps.getName().toString().c_str();
 		_Sound->setSoundName(ps.getName());
 		updateModifiedFlag();
 		UpdateData(FALSE);
@@ -187,7 +184,7 @@ BOOL CEditPSSound::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	nlassert(_Sound);
-	m_SoundName = NLMISC::CStringMapper::unmap(_Sound->getSoundName()).c_str();
+	m_SoundName = _Sound->getSoundName().toString().c_str();
 	
 	UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -198,7 +195,7 @@ void CEditPSSound::OnChangeSoundName()
 {
 	nlassert(_Sound);
 	UpdateData();
-	_Sound->setSoundName(NLMISC::CStringMapper::map(NLMISC::tStrToUtf8(m_SoundName)));
+	_Sound->setSoundName(NLMISC::CSheetId(NLMISC::tStrToUtf8(m_SoundName), "sound"));	
 	 updateModifiedFlag();
 }
 

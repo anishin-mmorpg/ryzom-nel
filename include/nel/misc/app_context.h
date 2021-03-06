@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2015  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -240,22 +237,6 @@ namespace NLMISC
 		} \
 	private:
 
-#define NLMISC_SAFE_RELEASABLE_SINGLETON_DECL(className) \
-		NLMISC_SAFE_SINGLETON_DECL(className); \
-		\
-	public: \
-		static void releaseInstance() \
-		{ \
-			if (_Instance) \
-			{ \
-				NLMISC::INelContext::getInstance().releaseSingletonPointer(#className, _Instance); \
-				delete _Instance; \
-				_Instance = NULL; \
-			} \
-		} \
-	private:
-
-
 	/** The same as above, but generate a getInstance method that
 	 *	return a pointer instead of a reference
 	 */
@@ -323,6 +304,5 @@ void initNelLibrary(CLibrary &lib);
 
 } // namespace NLMISC
 
-#include <nel/misc/debug.h>
 
 #endif //APP_CONTEXT_H

@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -738,7 +735,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			}
 			else if ( nlstricmp( fields[i], "parent" ) == 0 )
 			{
-				fields[i] = toLowerAscii( fields[i] );
+				fields[i] = toLower( fields[i] );
 			}
 			else
 			{
@@ -883,7 +880,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 		{
 			filebase += "." + sheetType;
 		}
-		filebase = toLowerAscii(filebase);
+		filebase = toLower(filebase);
 		string	filename, dirbase;
 		bool	isNewSheet=true;
 
@@ -905,7 +902,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 			else
 			{
 				// Load template sheet
-				filename = toLowerAscii(filebase);
+				filename = toLower(filebase);
 				form = (CForm*)formLoader->loadForm( (string("_empty.") + sheetType).c_str() );
 				if (form == NULL)
 				{

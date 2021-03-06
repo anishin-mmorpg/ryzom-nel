@@ -1,9 +1,5 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
-// Copyright (C) 2010-2019  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2019-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -28,7 +24,6 @@
 #include "nel/gui/ctrl_button.h"
 #include "nel/gui/group_table.h"
 #include "nel/gui/html_element.h"
-#include "nel/gui/html_parser.h"
 #include "nel/gui/css_style.h"
 
 // forward declaration
@@ -129,7 +124,7 @@ namespace NLGUI
 		void endParagraph();
 
 		// add image download (used by view_bitmap.cpp to load web images)
-		void addImageDownload(const std::string &url, CViewBase *img, const CStyleParams &style = CStyleParams(), const TImageType type = NormalImage, const std::string &placeholder = "web_del.tga");
+		void addImageDownload(const std::string &url, CViewBase *img, const CStyleParams &style = CStyleParams(), const TImageType type = NormalImage);
 		// remove image from download list if present
 		void removeImageDownload(CViewBase *img);
 		std::string localImageName(const std::string &url);
@@ -217,7 +212,7 @@ namespace NLGUI
 		// Browser home
 		std::string		Home;
 		// Get Home URL
-		virtual std::string	home() const;
+		virtual std::string	home();
 
 		// Undo browse: Browse the precedent url browsed. no op if none
 		void browseUndo ();
@@ -322,16 +317,16 @@ namespace NLGUI
 		void clearContext();
 
 		// Translate a char
-		bool translateChar(u32char &output, u32char input, u32char lastChar) const;
+		bool translateChar(ucchar &output, ucchar input, ucchar lastChar) const;
 
 		// Add a string in the current paragraph
-		void addString(const std::string &str);
+		void addString(const ucstring &str);
 
 		// Add an image in the current paragraph
 		void addImage(const std::string &id, const std::string &img, bool reloadImg=false, const CStyleParams &style = CStyleParams());
 
 		// Add a text area in the current paragraph
-		CInterfaceGroup *addTextArea (const std::string &templateName, const char *name, uint rows, uint cols, bool multiLine, const std::string &content, uint maxlength);
+		CInterfaceGroup *addTextArea (const std::string &templateName, const char *name, uint rows, uint cols, bool multiLine, const ucstring &content, uint maxlength);
 
 		// Add a combo box in the current paragraph
 		CDBGroupComboBox *addComboBox(const std::string &templateName, const char *name);
@@ -352,19 +347,15 @@ namespace NLGUI
 		void flushString();
 
 		// Set the title
+		void setTitle (const ucstring &title);
 		void setTitle (const std::string &title);
 		std::string getTitle() const;
-		void setContainerTitle (const std::string &title);
 
 		// Lookup a url in local file system
 		bool lookupLocalFile (std::string &result, const char *url, bool isUrl);
 
 		// Delete page content and prepare next page
 		void removeContent ();
-
-		// Counter to number html elements without id attribute
-		uint32			getNextAutoIdSeq() { return _AutoIdSeq++; }
-		uint32			_AutoIdSeq;
 
 		// Current URL for relative links in page
 		std::string		_URL;
@@ -377,9 +368,7 @@ namespace NLGUI
 		// true if renderer is waiting for css files to finish downloading (link rel=stylesheet)
 		bool			_WaitingForStylesheet;
 		// list of css file urls that are queued up for download
-		std::vector<CHtmlParser::StyleLink> _StylesheetQueue;
-		// <style> and downloaded <link rel=stylesheet> elements
-		std::vector<std::string> _HtmlStyles;
+		std::vector<std::string> _StylesheetQueue;
 
 		// Valid base href was found
 		bool            _IgnoreBaseUrlTag;
@@ -396,10 +385,10 @@ namespace NLGUI
 		bool			_TrustedDomain;
 
 		// Title prefix
-		std::string		_TitlePrefix;
+		ucstring		_TitlePrefix;
 
 		// Title string
-		std::string		_TitleString;
+		ucstring		_TitleString;
 
 		// Need to browse next update coords..
 		bool			_BrowseNextTime;
@@ -557,11 +546,6 @@ namespace NLGUI
 		// IL mode
 		bool _LI;
 
-		// style from browser.css
-		CCssStyle _BrowserStyle;
-		// local file for browser.css
-		std::string _BrowserCssFile;
-
 		// Keep track of current element style
 		CCssStyle _Style;
 		CHtmlElement _HtmlDOM;
@@ -648,7 +632,7 @@ namespace NLGUI
 				std::string		Name;
 
 				// Variable value
-				std::string		Value;
+				ucstring		Value;
 
 				// Text area group
 				CInterfaceGroup *TextArea;
@@ -687,8 +671,6 @@ namespace NLGUI
 			std::vector<CEntry>	Entries;
 		};
 		std::vector<CForm>	_Forms;
-		// if <FORM> element has been closed or not
-		bool				_FormOpen;
 
 		// submit buttons added to from
 		struct SFormSubmitButton
@@ -720,7 +702,6 @@ namespace NLGUI
 				VAlign = CGroupCell::Middle;
 				LeftMargin = 0;
 				NoWrap = false;
-				Height = 0;
 			}
 			NLMISC::CRGBA	BgColor;
 			std::string		Style;
@@ -728,7 +709,6 @@ namespace NLGUI
 			CGroupCell::TVAlign	VAlign;
 			sint32	LeftMargin;
 			bool	NoWrap;
-			sint32	Height;
 		};
 		std::vector<CCellParams>	_CellParams;
 
@@ -751,7 +731,7 @@ namespace NLGUI
 		// Current node is a text area
 		bool			_TextArea;
 		std::string		_TextAreaTemplate;
-		std::string		_TextAreaContent;
+		ucstring		_TextAreaContent;
 		std::string		_TextAreaName;
 		uint			_TextAreaRow;
 		uint			_TextAreaCols;
@@ -759,7 +739,7 @@ namespace NLGUI
 
 		// current mode is in select option
 		bool			_SelectOption;
-		std::string		_SelectOptionStr;
+		ucstring		_SelectOptionStr;
 
 		// Current node is a object
 		std::string		_ObjectType;
@@ -769,7 +749,7 @@ namespace NLGUI
 		std::string		_TextAreaScript;
 
 		// Get last char
-		u32char getLastChar() const;
+		ucchar getLastChar() const;
 
 		// Current link view
 		class CViewLink			*_CurrentViewLink;
@@ -830,7 +810,7 @@ namespace NLGUI
 		void spliceFragment(std::list<CHtmlElement>::iterator src);
 
 		// decode all HTML entities
-		static std::string decodeHTMLEntities(const std::string &str);
+		static ucstring decodeHTMLEntities(const ucstring &str);
 
 		struct CDataImageDownload
 		{
@@ -893,7 +873,7 @@ namespace NLGUI
 		std::string localBnpName(const std::string &url);
 
 		// add css file from <link href=".." rel="stylesheet"> to download queue
-		void addStylesheetDownload(std::vector<CHtmlParser::StyleLink> links);
+		void addStylesheetDownload(std::vector<std::string> links);
 
 		// stop all curl downalods (html and data)
 		void releaseDownloads();
@@ -959,7 +939,6 @@ namespace NLGUI
 		//void htmlEM(const CHtmlElement &elm);
 		void htmlFONT(const CHtmlElement &elm);
 		void htmlFORM(const CHtmlElement &elm);
-		void htmlFORMend(const CHtmlElement &elm);
 		void htmlH(const CHtmlElement &elm);
 		void htmlHend(const CHtmlElement &elm);
 		void htmlHEAD(const CHtmlElement &elm);

@@ -1,9 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -227,7 +224,7 @@ namespace NLGUI
 			pos++;
 		}
 
-		unit = toLowerAscii(str.substr(pos));
+		unit = toLower(str.substr(pos));
 		if (unit == "%" || unit == "rem" || unit == "em" || unit == "px" || unit == "pt")
 		{
 			std::string tmpstr = str.substr(0, pos);
@@ -687,7 +684,7 @@ namespace NLGUI
 		}
 
 		// make sure domain is lowercase
-		chunks[0] = toLowerAscii(chunks[0]);
+		chunks[0] = toLower(chunks[0]);
 
 		if (chunks[0] != domain && chunks[0] != std::string("." + domain))
 		{

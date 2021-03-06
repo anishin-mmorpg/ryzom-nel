@@ -66,7 +66,7 @@ if not args.noconf:
 	try:
 		ToolDirectories
 	except NameError:
-		ToolDirectories = [ 'R:/build/dev/bin/Release', 'R:/external/bin' ]
+		ToolDirectories = [ 'R:/build/dev/bin/Release', 'D:/libraries/external/bin' ]
 	try:
 		ToolSuffix
 	except NameError:
@@ -78,63 +78,55 @@ if not args.noconf:
 	try:
 		WorkspaceDirectory
 	except NameError:
-		WorkspaceDirectory = "R:/leveldesign/workspace"
+		WorkspaceDirectory = "L:/workspace"
 	try:
 		DatabaseDirectory
 	except NameError:
-		DatabaseDirectory = "R:/graphics"
-	try:
-		SoundDirectory
-	except NameError:
-		SoundDirectory = "R:/sound"
-	try:
-		SoundDfnDirectory
-	except NameError:
-		SoundDfnDirectory = "R:/sound/DFN"
+		DatabaseDirectory = "W:/database"
 	try:
 		ExportBuildDirectory
 	except NameError:
-		ExportBuildDirectory = "R:/pipeline/export"
+		ExportBuildDirectory = "T:/export"
 	try:
 		InstallDirectory
 	except NameError:
-		InstallDirectory = "R:/pipeline/install"
+		InstallDirectory = "T:/install"
 	try:
 		ClientDevDirectory
 	except NameError:
-		ClientDevDirectory = "R:/pipeline/client_dev"
+		ClientDevDirectory = "T:/client_dev"
 	try:
 		ClientPatchDirectory
 	except NameError:
-		ClientPatchDirectory = "R:/pipeline/client_patch"
+		ClientPatchDirectory = "T:/client_patch"
 	try:
 		ClientInstallDirectory
 	except NameError:
-		ClientInstallDirectory = "R:/pipeline/client_install"
+		ClientInstallDirectory = "T:/client_install"
 	try:
 		ShardInstallDirectory
 	except NameError:
-		ShardInstallDirectory = "R:/pipeline/shard"
+		ShardInstallDirectory = "T:/shard"
 	try:
 		WorldEditInstallDirectory
 	except NameError:
-		WorldEditInstallDirectory = "R:/pipeline/worldedit"
+		WorldEditInstallDirectory = "T:/worldedit"
 	try:
 		LeveldesignDirectory
 	except NameError:
-		LeveldesignDirectory = "R:/leveldesign"
+		LeveldesignDirectory = "L:/leveldesign"
 	try:
 		LeveldesignDfnDirectory
 	except NameError:
-		LeveldesignDfnDirectory = "R:/leveldesign/DFN"
+		LeveldesignDfnDirectory = "L:/leveldesign/DFN"
 	try:
 		LeveldesignWorldDirectory
 	except NameError:
-		LeveldesignWorldDirectory = "R:/leveldesign/world"
+		LeveldesignWorldDirectory = "L:/leveldesign/world"
 	try:
 		PrimitivesDirectory
 	except NameError:
-		PrimitivesDirectory = "R:/leveldesign/primitives"
+		PrimitivesDirectory = "L:/primitives"
 	try:
 		GamedevDirectory
 	except NameError:
@@ -150,15 +142,15 @@ if not args.noconf:
 	try:
 		LeveldesignDataShardDirectory
 	except NameError:
-		LeveldesignDataShardDirectory = "R:/leveldesign/shard"
+		LeveldesignDataShardDirectory = "L:/shard"
 	try:
 		LeveldesignDataCommonDirectory
 	except NameError:
-		LeveldesignDataCommonDirectory = "R:/leveldesign/common"
+		LeveldesignDataCommonDirectory = "L:/common"
 	try:
 		TranslationDirectory
 	except NameError:
-		TranslationDirectory = "R:/leveldesign/translation"
+		TranslationDirectory = "L:/translation"
 	try:
 		WorldEditorFilesDirectory
 	except NameError:
@@ -166,39 +158,27 @@ if not args.noconf:
 	try:
 		WindowsExeDllCfgDirectories
 	except NameError:
-		WindowsExeDllCfgDirectories = [ 'C:/Program Files (x86)/Microsoft Visual Studio 9.0/VC/redist/x86', 'R:/external/bin', 'R:/build/dev/bin/Release', 'R:/code/ryzom/client', 'R:/code/nel/lib', 'R:/code/ryzom/bin', 'R:/code/ryzom/tools/client/client_config/bin' ]
+		WindowsExeDllCfgDirectories = [ 'C:/Program Files (x86)/Microsoft Visual Studio 9.0/VC/redist/x86', 'D:/libraries/external/bin', 'R:/build/dev/bin/Release', 'R:/code/ryzom/client', 'R:/code/nel/lib', 'R:/code/ryzom/bin', 'R:/code/ryzom/tools/client/client_config/bin' ]
 	try:
 		LinuxServiceExecutableDirectory
 	except NameError:
-		LinuxServiceExecutableDirectory = "R:/build/gcc_server/bin"
+		LinuxServiceExecutableDirectory = "S:/devls_x64/bin"
 	try:
 		LinuxClientExecutableDirectory
 	except NameError:
-		LinuxClientExecutableDirectory = "R:/build/gcc_client/bin"
+		LinuxClientExecutableDirectory = "S:/devl_x64/bin"
 	try:
 		PatchmanCfgAdminDirectory
 	except NameError:
-		PatchmanCfgAdminDirectory = "R:/patchman/admin_install"
+		PatchmanCfgAdminDirectory = "R:/code/ryzom/server/patchman_cfg/admin_install"
 	try:
 		PatchmanCfgDefaultDirectory
 	except NameError:
-		PatchmanCfgDefaultDirectory = "R:/patchman/default"
+		PatchmanCfgDefaultDirectory = "R:/code/ryzom/server/patchman_cfg/default"
 	try:
 		PatchmanBridgeServerDirectory
 	except NameError:
-		PatchmanBridgeServerDirectory = "R:/pipeline/bridge_server"
-	try:
-		SignToolExecutable
-	except NameError:
-		SignToolExecutable = "C:/Program Files/Microsoft SDKs/Windows/v6.0A/Bin/signtool.exe"
-	try:
-		SignToolSha1
-	except NameError:
-		SignToolSha1 = ""
-	try:
-		SignToolTimestamp
-	except NameError:
-		SignToolTimestamp = "http://timestamp.comodoca.com/authenticode"
+		PatchmanBridgeServerDirectory = "T:/bridge_server"
 	try:
 		MaxAvailable
 	except NameError:
@@ -238,8 +218,6 @@ if not args.noconf:
 	ScriptDirectory = askVar(log, "[IN] Script Directory", os.getcwd().replace("\\", "/")).replace("\\", "/")
 	WorkspaceDirectory = askVar(log, "[IN] Workspace Directory", WorkspaceDirectory).replace("\\", "/")
 	DatabaseDirectory = askVar(log, "[IN] Database Directory", DatabaseDirectory).replace("\\", "/")
-	SoundDirectory = askVar(log, "[IN] Sound Directory", SoundDirectory).replace("\\", "/")
-	SoundDfnDirectory = askVar(log, "[IN] Sound DFN Directory", SoundDfnDirectory).replace("\\", "/")
 	ExportBuildDirectory = askVar(log, "[OUT] Export Build Directory", ExportBuildDirectory).replace("\\", "/")
 	InstallDirectory = askVar(log, "[OUT] Install Directory", InstallDirectory).replace("\\", "/")
 	ClientDevDirectory = askVar(log, "[OUT] Client Dev Directory", ClientDevDirectory).replace("\\", "/")
@@ -270,9 +248,6 @@ if not args.noconf:
 	PatchmanCfgAdminDirectory = askVar(log, "[IN] Patchman Cfg Admin Directory", PatchmanCfgAdminDirectory).replace("\\", "/")
 	PatchmanCfgDefaultDirectory = askVar(log, "[IN] Patchman Cfg Default Directory", PatchmanCfgDefaultDirectory).replace("\\", "/")
 	PatchmanBridgeServerDirectory = askVar(log, "[OUT] Patchman Bridge Server Patch Directory", PatchmanBridgeServerDirectory).replace("\\", "/")
-	SignToolExecutable = askVar(log, "Sign Tool Executable", SignToolExecutable).replace("\\", "/")
-	SignToolSha1 = askVar(log, "Sign Tool Signature SHA1", SignToolSha1)
-	SignToolTimestamp = askVar(log, "Sign Tool Timestamp Authority", SignToolTimestamp)
 	MaxAvailable = int(askVar(log, "3dsMax Available", str(MaxAvailable)))
 	if MaxAvailable:
 		MaxDirectory = askVar(log, "3dsMax Directory", MaxDirectory).replace("\\", "/")
@@ -326,8 +301,6 @@ if not args.noconf:
 	sf.write("\n")
 	sf.write("# Data build directories\n")
 	sf.write("DatabaseDirectory = \"" + str(DatabaseDirectory) + "\"\n")
-	sf.write("SoundDirectory = \"" + str(SoundDirectory) + "\"\n")
-	sf.write("SoundDfnDirectory = \"" + str(SoundDfnDirectory) + "\"\n")
 	sf.write("ExportBuildDirectory = \"" + str(ExportBuildDirectory) + "\"\n")
 	sf.write("\n")
 	sf.write("# Install directories\n")
@@ -360,11 +333,6 @@ if not args.noconf:
 	sf.write("PatchmanCfgAdminDirectory = \"" + str(PatchmanCfgAdminDirectory) + "\"\n")
 	sf.write("PatchmanCfgDefaultDirectory = \"" + str(PatchmanCfgDefaultDirectory) + "\"\n")
 	sf.write("PatchmanBridgeServerDirectory = \"" + str(PatchmanBridgeServerDirectory) + "\"\n")
-	sf.write("\n")
-	sf.write("# Sign tool\n")
-	sf.write("SignToolExecutable = \"" + str(SignToolExecutable) + "\"\n")
-	sf.write("SignToolSha1 = \"" + str(SignToolSha1) + "\"\n")
-	sf.write("SignToolTimestamp = \"" + str(SignToolTimestamp) + "\"\n")
 	sf.write("\n")
 	sf.write("# 3dsMax directives\n")
 	sf.write("MaxAvailable = " + str(MaxAvailable) + "\n")
@@ -434,7 +402,6 @@ if not args.noverify:
 	findTool(log, ToolDirectories, BuildFarbankTool, ToolSuffix)
 	findTool(log, ToolDirectories, ZoneDependenciesTool, ToolSuffix)
 	findTool(log, ToolDirectories, ZoneWelderTool, ToolSuffix)
-	findTool(log, ToolDirectories, ZoneElevationTool, ToolSuffix)
 	findTool(log, ToolDirectories, BuildRbankTool, ToolSuffix)
 	findTool(log, ToolDirectories, BuildIndoorRbankTool, ToolSuffix)
 	findTool(log, ToolDirectories, BuildIgBoxesTool, ToolSuffix)
@@ -448,9 +415,6 @@ if not args.noverify:
 	findTool(log, ToolDirectories, MakeSheetIdTool, ToolSuffix)
 	# findTool(log, ToolDirectories, BuildSheetsTool, ToolSuffix) # kaetemi stuff, ignore this
 	# findTool(log, ToolDirectories, BuildSoundTool, ToolSuffix) # kaetemi stuff, ignore this
-	# findTool(log, ToolDirectories, BuildSoundTool, ToolSuffix)
-	findTool(log, ToolDirectories, BuildSoundbankTool, ToolSuffix)
-	findTool(log, ToolDirectories, BuildSamplebankTool, ToolSuffix)
 	findTool(log, ToolDirectories, BuildCoarseMeshTool, ToolSuffix)
 	findTool(log, ToolDirectories, LightmapOptimizerTool, ToolSuffix)
 	findTool(log, ToolDirectories, BuildClodtexTool, ToolSuffix)

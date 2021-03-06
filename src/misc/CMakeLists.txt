@@ -25,8 +25,6 @@ FILE(GLOB NLMISC_FILESYSTEM
 	big_file.cpp ../../include/nel/misc/big_file.h
 	*_xml.cpp ../../include/nel/misc/*_xml.h
 	xml_*.cpp ../../include/nel/misc/xml_*.h
-	streamed_*.cpp ../../include/nel/misc/streamed_*.h
-	seven_zip.cpp ../../include/nel/misc/seven_zip.h
 )
 
 FILE(GLOB NLMISC_STREAM
@@ -211,11 +209,9 @@ IF(UNIX)
   ENDIF()
 ENDIF()
 
-INCLUDE_DIRECTORIES(../../3rdparty)
 INCLUDE_DIRECTORIES(${LIBXML2_INCLUDE_DIR} ${PNG_INCLUDE_DIR} config_file)
 
-TARGET_LINK_LIBRARIES(nelmisc ${CMAKE_THREAD_LIBS_INIT} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARY} nel_sevenzip)
-
+TARGET_LINK_LIBRARIES(nelmisc ${CMAKE_THREAD_LIBS_INIT} ${LIBXML2_LIBRARIES} ${ZLIB_LIBRARY})
 NL_DEFAULT_PROPS(nelmisc "NeL, Library: NeL Misc")
 NL_ADD_RUNTIME_FLAGS(nelmisc)
 

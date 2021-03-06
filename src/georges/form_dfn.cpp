@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-// Copyright (C) 2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -882,7 +878,7 @@ void CFormDfn::warning (bool exception, const std::string &function, const char 
 void CFormDfn::getDependencies (std::set<std::string> &dependencies) const
 {
 	// Scan only if not already inserted
-	if (dependencies.insert (toLowerAscii(CFile::getFilename (_Filename))).second)
+	if (dependencies.insert (toLower(CFile::getFilename (_Filename))).second)
 	{
 		// Add parents
 		uint i;
@@ -898,7 +894,7 @@ void CFormDfn::getDependencies (std::set<std::string> &dependencies) const
 				Entries[i].getDfnPtr ()->getDependencies (dependencies);
 			if (Entries[i].getTypePtr ())
 			{
-				dependencies.insert (toLowerAscii(CFile::getFilename (Entries[i].getFilename())));
+				dependencies.insert (toLower(CFile::getFilename (Entries[i].getFilename())));
 			}
 		}
 	}

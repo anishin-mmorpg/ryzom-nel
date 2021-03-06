@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -235,15 +232,15 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffComments, bool noDiffInfo)
 {
-	string diff;
+	ucstring diff;
 
 	vector<TStringInfo>::const_iterator first(strings.begin()), last(strings.end());
 	for (; first != last; ++first)
 	{
-		string str;
+		ucstring str;
 		const TStringInfo &si = *first;
-		string comment = si.Comments.toUtf8();
-		vector<string> lines;
+		string comment = si.Comments.toString();
+		vector<string>	lines;
 		explode(comment, string("\n"), lines, true);
 
 		uint i;
@@ -277,29 +274,30 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 		}
 		si.Comments = ucstring(comment);
 
-		str = comment;
+		str = si.Comments;
 		if (!si.Identifier.empty() || !si.Text.empty())
 		{
 			// add hash value comment if needed
 //			if (si.Comments.find(ucstring("// HASH_VALUE ")) == ucstring::npos)
 			if (!noDiffInfo)
 			{
-				str += "// HASH_VALUE " + CI18N::hashToString(si.HashValue) + "\n";
-				str += "// INDEX " + NLMISC::toString("%u", first-strings.begin()) + "\n";
+			str += ucstring("// HASH_VALUE ") + CI18N::hashToString(si.HashValue)+ nl;
+			str += ucstring("// INDEX ") + NLMISC::toString("%u", first-strings.begin())+ nl;
 			}
 			str += si.Identifier + '\t';
 
-			string text = CI18N::makeMarkedString('[', ']', si.Text).toUtf8();
-			string text2;
+			ucstring text = CI18N::makeMarkedString('[', ']', si.Text);;
+			ucstring text2;
 			// add new line and tab after each \n tag
-			string::size_type pos;
-			while ((pos = text.find("\\n")) != string::npos)
+			ucstring::size_type pos;
+			const ucstring nlTag("\\n");
+			while ((pos = text.find(nlTag)) != ucstring::npos)
 			{
-				text2 += text.substr(0, pos+2) + "\n\t";
+				text2 += text.substr(0, pos+2) + nl + "\t";
 				text = text.substr(pos+2);
 			}
 			text2 += text;//.substr(0, pos+2);
-			str += text2 + "\n\n";
+			str += text2 + nl + nl;
 //			str += CI18N::makeMarkedString('[', ']', si.Text) + nl + nl;
 		}
 
@@ -307,7 +305,7 @@ ucstring prepareStringFile(const vector<TStringInfo> &strings, bool removeDiffCo
 		diff += str;
 	}
 
-	return ucstring::makeFromUtf8(diff);
+	return diff;
 }
 
 

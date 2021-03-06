@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2012-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-// Copyright (C) 2014-2015  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -27,7 +23,6 @@
 #include "nel/misc/progress_callback.h"
 #include "nel/misc/file.h"
 #include "nel/misc/xml_pack.h"
-#include "nel/misc/streamed_package_manager.h"
 
 #ifdef NL_OS_WINDOWS
 #	include <sys/types.h>
@@ -293,7 +288,6 @@ void CFileContainer::clearMap ()
 	nlassert(!_MemoryCompressed);
 	_Files.clear ();
 	CBigFile::getInstance().removeAll ();
-	CStreamedPackageManager::getInstance().unloadAll ();
 	NL_DISPLAY_PATH("PATH: CPath::clearMap(): map directory cleared");
 }
 
@@ -334,15 +328,15 @@ void CFileContainer::remapExtension (const string &ext1, const string &ext2, boo
 {
 	nlassert(!_MemoryCompressed);
 
-	string ext1lwr = toLowerAscii(ext1);
-	string ext2lwr = toLowerAscii(ext2);
+	string ext1lwr = toLower(ext1);
+	string ext2lwr = toLower(ext2);
 
 	if (ext1lwr.empty() || ext2lwr.empty())
 	{
 		nlwarning ("PATH: CPath::remapExtension(%s, %s, %d): can't remap empty extension", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
 
-	if (ext1lwr == "bnp" || ext2lwr == "bnp" || ext1lwr == "snp" || ext2lwr == "snp")
+	if (ext1lwr == "bnp" || ext2lwr == "bnp")
 	{
 		nlwarning ("PATH: CPath::remapExtension(%s, %s, %d): you can't remap a big file", ext1lwr.c_str(), ext2lwr.c_str(), substitute);
 	}
@@ -417,7 +411,7 @@ void CFileContainer::remapFile (const std::string &file1, const std::string &fil
 {
 	if (file1.empty()) return;
 	if (file2.empty()) return;
-	_RemappedFiles[toLowerAscii(file1)] = toLowerAscii(file2);
+	_RemappedFiles[toLower(file1)] = toLower(file2);
 }
 
 // ***************************************************************************
@@ -497,7 +491,7 @@ string CFileContainer::lookup (const string &filename, bool throwException, bool
 	// Try to find in the map directories
 
 	// If filename contains a path, we get only the filename to look inside paths
-	string str = CFile::getFilename(toLowerAscii(filename));
+	string str = CFile::getFilename(toLower(filename));
 
 	// Remove end spaces
 	while ((!str.empty()) && (str[str.size()-1] == ' '))
@@ -557,7 +551,7 @@ string CFileContainer::lookup (const string &filename, bool throwException, bool
 		// try with the remapping
 		for (uint j = 0; j < _Extensions.size(); j++)
 		{
-			if (toLowerAscii(CFile::getExtension (str)) == _Extensions[j].second)
+			if (toLower(CFile::getExtension (str)) == _Extensions[j].second)
 			{
 				string rs = _AlternativePaths[i] + CFile::getFilenameWithoutExtension (filename) + "." + _Extensions[j].first;
 				if ( CFile::fileExists(rs) )
@@ -599,7 +593,7 @@ bool CPath::exists (const std::string &filename)
 bool CFileContainer::exists (const std::string &filename)
 {
 	// Try to find in the map directories
-	string str = toLowerAscii(filename);
+	string str = toLower(filename);
 
 	// Remove end spaces
 	while ((!str.empty()) && (str[str.size()-1] == ' '))
@@ -904,9 +898,9 @@ void CFileContainer::getPathContent (const string &path, bool recurse, bool want
 		if (isdirectory(de))
 		{
 			// skip CVS, .svn and .hg directory
-			if ((!showEverything) && (fn == "CVS" || fn == ".svn" || fn == ".hg" || fn == ".git"))
+			if ((!showEverything) && (fn == "CVS" || fn == ".svn" || fn == ".hg"))
 			{
-				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): skip '%s' directory", path.c_str(), recurse, wantDir, wantFile, fn.c_str());
+				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): skip CVS, .svn and .hg directory", path.c_str(), recurse, wantDir, wantFile);
 				continue;
 			}
 
@@ -1168,26 +1162,16 @@ void CFileContainer::addSearchFile (const string &file, bool remap, const string
 		return;
 	}
 
-	std::string fileExtension = CFile::getExtension(newFile);
-
 	// check if it s a big file
-	if (fileExtension == "bnp")
+	if (CFile::getExtension(newFile) == "bnp")
 	{
 		NL_DISPLAY_PATH ("PATH: CPath::addSearchFile(%s, %d, '%s'): '%s' is a big file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		addSearchBigFile(file, false, false, progressCallBack);
 		return;
 	}
 
-	// check if it s a streamed package
-	if (fileExtension == "snp")
-	{
-		NL_DISPLAY_PATH ("PATH: CPath::addSearchStreamedPackage(%s, %d, '%s'): '%s' is a streamed package, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
-		addSearchStreamedPackage(file, false, false, progressCallBack);
-		return;
-	}
-
 	// check if it s an xml pack file
-	if (fileExtension == "xml_pack")
+	if (CFile::getExtension(newFile) == "xml_pack")
 	{
 		NL_DISPLAY_PATH ("PATH: CPath::addSearchFile(%s, %d, '%s'): '%s' is an xml pack file, add it", file.c_str(), remap, virtual_ext.c_str(), newFile.c_str());
 		addSearchXmlpackFile(file, false, false, progressCallBack);
@@ -1215,7 +1199,7 @@ void CFileContainer::addSearchFile (const string &file, bool remap, const string
 		// now, we have to see extension and insert in the map the remapped files
 		for (uint i = 0; i < _Extensions.size (); i++)
 		{
-			if (_Extensions[i].first == toLowerAscii(ext))
+			if (_Extensions[i].first == toLower(ext))
 			{
 				// need to remap
 				addSearchFile (newFile, true, _Extensions[i].second, progressCallBack);
@@ -1341,13 +1325,10 @@ void CFileContainer::addSearchBigFile (const string &sBigFilename, bool recurse,
 				fclose(Handle);
 				return;
 			}
-			if (nStringSize)
+			if (fread (FileName, 1, nStringSize, Handle) != nStringSize)
 			{
-				if (fread(FileName, 1, nStringSize, Handle) != nStringSize)
-				{
-					fclose(Handle);
-					return;
-				}
+				fclose(Handle);
+				return;
 			}
 			FileName[nStringSize] = 0;
 			uint32 nFileSize2;
@@ -1372,7 +1353,7 @@ void CFileContainer::addSearchBigFile (const string &sBigFilename, bool recurse,
 			NLMISC_BSWAP32(nFilePos);
 #endif
 
-			string sTmp = toLowerAscii(string(FileName));
+			string sTmp = toLower(string(FileName));
 			if (sTmp.empty())
 			{
 				nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
@@ -1380,7 +1361,7 @@ void CFileContainer::addSearchBigFile (const string &sBigFilename, bool recurse,
 			}
 			string bigfilenamealone = CFile::getFilename (sBigFilename);
 			string filenamewoext = CFile::getFilenameWithoutExtension (sTmp);
-			string ext = toLowerAscii(CFile::getExtension(sTmp));
+			string ext = toLower(CFile::getExtension(sTmp));
 
 			insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
 
@@ -1409,64 +1390,6 @@ void CFileContainer::addSearchBigFile (const string &sBigFilename, bool recurse,
 	}
 
 	fclose (Handle);
-}
-
-void CPath::addSearchStreamedPackage (const string &filename, bool recurse, bool alternative, NLMISC::IProgressCallback *progressCallBack)
-{
-	getInstance()->_FileContainer.addSearchBigFile(filename, recurse, alternative, progressCallBack);
-}
-
-void CFileContainer::addSearchStreamedPackage (const string &filename, bool recurse, bool alternative, NLMISC::IProgressCallback *progressCallBack)
-{
-	// Check if filename is not empty
-	if (filename.empty())
-	{
-		nlwarning ("PATH: CPath::addSearchStreamedPackage(%s, %d, %d): can't add empty file, skip it", filename.c_str(), recurse, alternative);
-		return;
-	}
-	// Check if the file exists
-	if (!CFile::isExists(filename))
-	{
-		nlwarning ("PATH: CPath::addSearchStreamedPackage(%s, %d, %d): '%s' is not found, skip it", filename.c_str(), recurse, alternative, filename.c_str());
-		return;
-	}
-	// Check if it s a file
-	if (CFile::isDirectory(filename))
-	{
-		nlwarning ("PATH: CPath::addSearchStreamedPackage(%s, %d, %d): '%s' is not a file, skip it", filename.c_str(), recurse, alternative, filename.c_str());
-		return;
-	}
-
-	// Add the file itself
-	std::string packname = NLMISC::toLowerAscii(CFile::getFilename(filename));
-	insertFileInMap(packname, filename, false, CFile::getExtension(filename));
-
-	// Add the package to the package manager
-	if (CStreamedPackageManager::getInstance().loadPackage(filename))
-	{
-		std::vector<std::string> fileNames;
-		CStreamedPackageManager::getInstance().list(fileNames, packname);
-
-		for (std::vector<std::string>::iterator it(fileNames.begin()), end(fileNames.end()); it != end; ++it)
-		{
-			// Add the file to the lookup
-			std::string filePackageName = packname + "@" + (*it);
-			// nldebug("Insert '%s'", filePackageName.c_str());
-			insertFileInMap((*it), filePackageName, false, CFile::getExtension(*it));
-
-			// Remapped extensions
-			std::string ext = CFile::getExtension(*it);
-			for (uint j = 0; j < _Extensions.size (); j++)
-			{
-				if (_Extensions[j].first == ext)
-				{
-					// Need to remap
-					insertFileInMap(CFile::getFilenameWithoutExtension(*it) + "." + _Extensions[j].second,
-						filePackageName, true, _Extensions[j].first);
-				}
-			}
-		}
-	}
 }
 
 // WARNING : recurse is not used
@@ -1525,7 +1448,7 @@ void CFileContainer::addSearchXmlpackFile (const string &sXmlpackFilename, bool 
 
 			string packfilenamealone = sXmlpackFilename;
 			string filenamewoext = CFile::getFilenameWithoutExtension (filenames[i]);
-			string ext = toLowerAscii(CFile::getExtension(filenames[i]));
+			string ext = toLower(CFile::getExtension(filenames[i]));
 
 			insertFileInMap (filenames[i], packfilenamealone + "@@" + filenames[i], false, ext);
 
@@ -1570,7 +1493,7 @@ void CFileContainer::insertFileInMap (const string &filename, const string &file
 {
 	nlassert(!_MemoryCompressed);
 	// find if the file already exist
-	TFiles::iterator it = _Files.find (toLowerAscii(filename));
+	TFiles::iterator it = _Files.find (toLower(filename));
 	if (it != _Files.end ())
 	{
 		string path = SSMpath.get((*it).second.idPath);
@@ -1629,8 +1552,8 @@ void CFileContainer::insertFileInMap (const string &filename, const string &file
 		fe.idPath = SSMpath.add(sTmp);
 		fe.Name = filename;
 
-		_Files.insert (make_pair(toLowerAscii(filename), fe));
-		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", toLowerAscii(filename).c_str(), filepath.c_str(), remap, toLowerAscii(extension).c_str());
+		_Files.insert (make_pair(toLower(filename), fe));
+		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", toLower(filename).c_str(), filepath.c_str(), remap, toLower(extension).c_str());
 	}
 }
 
@@ -1690,13 +1613,13 @@ void CFileContainer::removeBigFiles(const std::vector<std::string> &bnpFilenames
 	TFiles::iterator fileIt, fileCurrIt;
 	for (uint k = 0; k < bnpFilenames.size(); ++k)
 	{
-		std::string completeBNPName = toLowerAscii(bnpFilenames[k]) + "@";
+		std::string completeBNPName = toLower(bnpFilenames[k]) + "@";
 		if (SSMpath.isAdded(completeBNPName))
 		{
 			bnpStrIds.insert(SSMpath.add(completeBNPName));
 		}
 		CBigFile::getInstance().remove(bnpFilenames[k]);
-		fileIt = _Files.find(toLowerAscii(bnpFilenames[k]));
+		fileIt = _Files.find(toLower(bnpFilenames[k]));
 		if (fileIt != _Files.end())
 		{
 			_Files.erase(fileIt);
@@ -1756,7 +1679,7 @@ void CFileContainer::memoryCompress()
 	while (it != _Files.end())
 	{
 		string sTmp = SSMpath.get(it->second.idPath);
-		if ((sTmp.find("@@") == string::npos) && (sTmp.find('@') != string::npos) && (sTmp.find("snp@") == string::npos) && !it->second.Remapped)
+		if ((sTmp.find("@@") == string::npos) && (sTmp.find('@') != string::npos) && !it->second.Remapped)
 		{
 			// This is a file included in a bigfile (so the name is in the bigfile manager)
 		}
@@ -1779,7 +1702,7 @@ void CFileContainer::memoryCompress()
 	{
 		CFileEntry &rFE = it->second;
 		string sTmp = SSMpath.get(rFE.idPath);
-		if ((sTmp.find("@") == string::npos) || (sTmp.find("@@") != string::npos) || (sTmp.find("snp@") != string::npos) || rFE.Remapped)
+		if (sTmp.find("@") == string::npos || sTmp.find("@@") != string::npos || rFE.Remapped)
 		{
 			strcpy(_AllFileNames+nSize, rFE.Name.c_str());
 			_MCFiles[nNb].Name = _AllFileNames+nSize;
@@ -1825,7 +1748,7 @@ void CFileContainer::memoryUncompress()
 		fe.idPath = it->idPath;
 		fe.Remapped = it->Remapped;
 
-		_Files[toLowerAscii(CFile::getFilename(fe.Name))] = fe;
+		_Files[toLower(CFile::getFilename(fe.Name))] = fe;
 	}
 	contReset(_MCFiles);
 	_MemoryCompressed = false;
@@ -2076,7 +1999,6 @@ string CFile::findNewFile (const string &filename)
 // \warning doesn't work with big file
 uint32	CFile::getFileSize (const std::string &filename)
 {
-	std::string::size_type pos;
 	if (filename.find("@@") != string::npos)
 	{
 		uint32 fs = 0, bfo;
@@ -2084,21 +2006,12 @@ uint32	CFile::getFileSize (const std::string &filename)
 		CXMLPack::getInstance().getFile (filename, fs, bfo, c, d);
 		return fs;
 	}
-	else if ((pos = filename.find('@')) != string::npos)
+	else if (filename.find('@') != string::npos)
 	{
-		if (pos > 3 && filename[pos-3] == 's' && filename[pos-2] == 'n' && filename[pos-1] == 'p')
-		{
-			uint32 fs = 0;
-			CStreamedPackageManager::getInstance().getFileSize (fs, filename.substr(pos+1));
-			return fs;
-		}
-		else
-		{
-			uint32 fs = 0, bfo;
-			bool c, d;
-			CBigFile::getInstance().getFile (filename, fs, bfo, c, d);
-			return fs;
-		}
+		uint32 fs = 0, bfo;
+		bool c, d;
+		CBigFile::getInstance().getFile (filename, fs, bfo, c, d);
+		return fs;
 	}
 	else
 	{
@@ -2571,8 +2484,8 @@ bool CFile::createDirectory(const std::string &filename)
 #ifdef NL_OS_WINDOWS
 	return _wmkdir(nlUtf8ToWide(filename)) == 0;
 #else
-	// set rwxrwxr-x permissions
-	return mkdir(filename.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IXOTH)==0;
+	// Set full permissions....
+	return mkdir(filename.c_str(), 0xFFFF)==0;
 #endif
 }
 
@@ -2790,13 +2703,16 @@ bool CPath::isAbsolutePath(const std::string &path)
 bool CFile::setRWAccess(const std::string &filename)
 {
 #ifdef NL_OS_WINDOWS
-	std::wstring wideFile = NLMISC::utf8ToWide(filename);
+	ucstring ucFile;
+	ucFile.fromUtf8(filename);
+
+	wchar_t *wideFile = (wchar_t*)ucFile.c_str();
 
 	// if the file exists and there's no write access
-	if (_waccess (wideFile.c_str(), 00) == 0 && _waccess (wideFile.c_str(), 06) == -1)
+	if (_waccess (wideFile, 00) == 0 && _waccess (wideFile, 06) == -1)
 	{
 		// try to set the read/write access
-		if (_wchmod (wideFile.c_str(), _S_IREAD | _S_IWRITE) == -1)
+		if (_wchmod (wideFile, _S_IREAD | _S_IWRITE) == -1)
 		{
 			if (INelContext::getInstance().getAlreadyCreateSharedAmongThreads())
 			{
@@ -2810,17 +2726,7 @@ bool CFile::setRWAccess(const std::string &filename)
 	if (access (filename.c_str(), F_OK) == 0)
 	{
 		// try to set the read/write access
-		// rw-rw-r--
-		mode_t mode = S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH;
-
-		// set +x only for directory
-		// rwxrwxr-x
-		if (CFile::isDirectory(filename))
-		{
-			mode |= S_IXUSR|S_IXGRP|S_IXOTH;
-		}
-
-		if (chmod (filename.c_str(), mode) == -1)
+		if (chmod (filename.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH) == -1)
 		{
 			if (INelContext::getInstance().getAlreadyCreateSharedAmongThreads())
 			{
@@ -2829,7 +2735,6 @@ bool CFile::setRWAccess(const std::string &filename)
 			return false;
 		}
 	}
-#endif
 	else
 	{
 		if (INelContext::getInstance().getAlreadyCreateSharedAmongThreads())
@@ -2837,33 +2742,6 @@ bool CFile::setRWAccess(const std::string &filename)
 			nlwarning("PATH: Can't access to file '%s'", filename.c_str());
 		}
 //		return false;
-	}
-	return true;
-}
-
-bool CFile::setExecutable(const std::string &filename)
-{
-#ifndef NL_OS_WINDOWS
-	struct stat buf;
-	if (stat(filename.c_str (), &buf) == 0)
-	{
-		mode_t mode = buf.st_mode | S_IXUSR | S_IXGRP | S_IXOTH;
-		if (chmod(filename.c_str(), mode) == -1)
-		{
-			if (INelContext::getInstance().getAlreadyCreateSharedAmongThreads())
-			{
-				nlwarning ("PATH: Can't set +x flag on file '%s': %d %s", filename.c_str(), errno, strerror(errno));
-			}
-			return false;
-		}
-	}
-	else
-	{
-		if (INelContext::getInstance().getAlreadyCreateSharedAmongThreads())
-		{
-			nlwarning("PATH: Can't access file '%s': %d %s", filename.c_str(), errno, strerror(errno));
-		}
-		return false;
 	}
 #endif
 	return true;

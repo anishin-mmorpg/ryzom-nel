@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -323,11 +320,11 @@ public:
 class CEventChar : public CEventKey
 {
 public:
-	CEventChar (u32char c, TKeyButton button, IEventEmitter* emitter) : CEventKey (button, emitter, EventCharId), _Raw(true)
+	CEventChar (ucchar c, TKeyButton button, IEventEmitter* emitter) : CEventKey (button, emitter, EventCharId), _Raw(true)
 	{
 		Char=c;
 	}
-	u32char Char;
+	ucchar Char;
 
 	virtual	CEvent			*clone() const {return new CEventChar(*this);}
 	void					setRaw( bool raw ) { _Raw = raw; }
@@ -344,11 +341,11 @@ private:
 class CEventString : public CEventKey
 {
 public:
-	CEventString (const std::string &str, IEventEmitter* emitter) : CEventKey (noKeyButton, emitter, EventStringId)
+	CEventString (const ucstring &str, IEventEmitter* emitter) : CEventKey (noKeyButton, emitter, EventStringId)
 	{
 		String = str;
 	}
-	std::string String;
+	ucstring String;
 
 	virtual	CEvent			*clone() const {return new CEventString(*this);}
 };

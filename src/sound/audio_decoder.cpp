@@ -6,21 +6,24 @@
  * IAudioDecoder
  */
 
-// NeL - MMORPG Framework <https://wiki.ryzom.dev/>
-// Copyright (C) 2008-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/* 
+ * Copyright (C) 2008-2012  by authors
+ * 
+ * This file is part of RYZOM CORE.
+ * RYZOM CORE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * RYZOM CORE is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public
+ * License along with RYZOM CORE.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 #include "stdsound.h"
 #include <nel/sound/audio_decoder.h>
@@ -56,12 +59,18 @@ IAudioDecoder::~IAudioDecoder()
 
 IAudioDecoder *IAudioDecoder::createAudioDecoder(const std::string &filepath, bool async, bool loop)
 {
+	std::string lookup = CPath::lookup(filepath, false);
+	if (lookup.empty())
+	{ 
+		nlwarning("Music file %s does not exist!", filepath.c_str());
+		return NULL; 
+	}
 	std::string type = CFile::getExtension(filepath);
 
 	CIFile *ifile = new CIFile();
 	ifile->setCacheFileOnOpen(!async);
 	ifile->allowBNPCacheFileOnOpen(!async);
-	ifile->open(filepath);
+	ifile->open(lookup);
 
 	IAudioDecoder *mb = createAudioDecoder(type, ifile, loop);
 
@@ -89,7 +98,7 @@ IAudioDecoder *IAudioDecoder::createAudioDecoder(const std::string &type, NLMISC
 		return NULL;
 	}
 #else
-	std::string type_lower = toLowerAscii(type);
+	std::string type_lower = toLower(type);
 	if (type_lower == "ogg")
 	{
 		return new CAudioDecoderVorbis(stream, loop);
@@ -110,9 +119,10 @@ IAudioDecoder *IAudioDecoder::createAudioDecoder(const std::string &type, NLMISC
 
 bool IAudioDecoder::getInfo(const std::string &filepath, std::string &artist, std::string &title, float &length)
 {
-	if (filepath.empty() || !CFile::fileExists(filepath))
+	std::string lookup = CPath::lookup(filepath, false);
+	if (lookup.empty())
 	{
-		nlwarning("Music file '%s' does not exist!", filepath.c_str());
+		nlwarning("Music file %s does not exist!", filepath.c_str());
 		return false;
 	}
 
@@ -120,18 +130,18 @@ bool IAudioDecoder::getInfo(const std::string &filepath, std::string &artist, st
 	CIFile ifile;
 	ifile.setCacheFileOnOpen(false);
 	ifile.allowBNPCacheFileOnOpen(false);
-	if (ifile.open(filepath))
+	if (ifile.open(lookup))
 		return CAudioDecoderFfmpeg::getInfo(&ifile, artist, title, length);
 #else
 	std::string type = CFile::getExtension(filepath);
-	std::string type_lower = NLMISC::toLowerAscii(type);
+	std::string type_lower = NLMISC::toLower(type);
 
 	if (type_lower == "ogg")
 	{
 		CIFile ifile;
 		ifile.setCacheFileOnOpen(false);
 		ifile.allowBNPCacheFileOnOpen(false);
-		if (ifile.open(filepath))
+		if (ifile.open(lookup))
 			return CAudioDecoderVorbis::getInfo(&ifile, artist, title, length);
 
 		nlwarning("Unable to open: '%s'", filepath.c_str());
@@ -142,7 +152,7 @@ bool IAudioDecoder::getInfo(const std::string &filepath, std::string &artist, st
 		CIFile ifile;
 		ifile.setCacheFileOnOpen(false);
 		ifile.allowBNPCacheFileOnOpen(false);
-		if (ifile.open(filepath))
+		if (ifile.open(lookup))
 			return CAudioDecoderMP3::getInfo(&ifile, artist, title, length);
 
 		nlwarning("Unable to open: '%s'", filepath.c_str());

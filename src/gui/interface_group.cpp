@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -320,7 +316,7 @@ namespace NLGUI
 		ptr = (char*) xmlGetProp( cur, (xmlChar*)"max_sizeparent" );
 		if (ptr)
 		{
-			string idparent = NLMISC::toLowerAscii(ptr.str());
+			string idparent = NLMISC::toLower(ptr.str());
 			if (idparent != "parent")
 			{
 				if (parentGroup)
@@ -622,30 +618,13 @@ namespace NLGUI
 		{
 			std::string parentId;
 
-			if (value != "parent")
-			{
-				if (_Parent != NULL)
-				{
+			if( value != "parent" ){
+				if( _Parent != NULL )
 					parentId = _Parent->getId() + ":" + value;
-				}
 				else
-				{
-					parentId = "ui:" + value;
-				}
-			}
-			else
-			{
-				if (_Parent)
-				{
 					parentId = _Parent->getId();
-				}
-				else
-				{
-					parentId = value;
-				}
 			}
-
-			CWidgetManager::getInstance()->getParser()->addParentSizeMaxAssociation(this, parentId);
+			CWidgetManager::getInstance()->getParser()->addParentSizeMaxAssociation( this, parentId );
 			return;
 		}
 		else
@@ -1540,7 +1519,6 @@ namespace NLGUI
 		for (ite = _EltOrder.begin() ; ite != _EltOrder.end(); ite++)
 		{
 			CViewBase *pIE = *ite;
-			nlassert(pIE);
 			if (pIE->getActive())
 			{
 				const CInterfaceElement *el = pIE->getParentPos() ? pIE->getParentPos() : pIE->getParent();

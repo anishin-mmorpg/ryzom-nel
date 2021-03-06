@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -609,6 +606,7 @@ bool CObjectViewer::initUI (HWND parent)
 	{
 		new NLMISC::CApplicationContext();
 		nldebug("NeL Object Viewer: initUI");
+		NLMISC::CSheetId::initWithoutSheet();
 	}
 
 	// The fonts manager
@@ -3696,7 +3694,7 @@ void		CObjectViewer::shootScene()
 			string extension = NLMISC::CFile::getExtension (tStrToUtf8(fileDlg.GetPathName()));
 
 			// The file name without extension
-			bool jpeg = toLowerAscii (extension) == "jpg";
+			bool jpeg = toLower (extension) == "jpg";
 
 			// Activate the driver
  			CNELU::Driver->activate ();

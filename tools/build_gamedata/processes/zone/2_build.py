@@ -46,7 +46,6 @@ printLog(log, "")
 # Find tools
 ZoneDependencies = findTool(log, ToolDirectories, ZoneDependenciesTool, ToolSuffix)
 ZoneWelder = findTool(log, ToolDirectories, ZoneWelderTool, ToolSuffix)
-ZoneElevation = findTool(log, ToolDirectories, ZoneElevationTool, ToolSuffix)
 ExecTimeout = findTool(log, ToolDirectories, ExecTimeoutTool, ToolSuffix)
 printLog(log, "")
 
@@ -100,24 +99,24 @@ if BuildQuality == 1:
 	printLog(log, "")
 
 # For each zone directory
-#printLog(log, ">>> Build zone weld <<<")
-#if ZoneWelder == "":
-#	toolLogFail(log, ZoneWelderTool, ToolSuffix)
-#elif ExecTimeout == "":
-#	toolLogFail(log, ExecTimeoutTool, ToolSuffix)
-#else:
-#	mkPath(log, ExportBuildDirectory + "/" + ZoneExportDirectory)
-#	mkPath(log, ExportBuildDirectory + "/" + ZoneWeldBuildDirectory)
-#	files = findFiles(log, ExportBuildDirectory + "/" + ZoneExportDirectory, "", ".zone")
-#	for file in files:
-#		sourceFile = ExportBuildDirectory + "/" + ZoneExportDirectory + "/" + file
-#		destFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + os.path.basename(file)[0:-len(".zone")] + ".zonew"
-#		if needUpdateLogRemoveDest(log, sourceFile, destFile):
-#			subprocess.call([ ExecTimeout, str(ZoneBuildWeldTimeout), ZoneWelder, sourceFile, destFile ])
-#printLog(log, "")
+printLog(log, ">>> Build zone weld <<<")
+if ZoneWelder == "":
+	toolLogFail(log, ZoneWelderTool, ToolSuffix)
+elif ExecTimeout == "":
+	toolLogFail(log, ExecTimeoutTool, ToolSuffix)
+else:
+	mkPath(log, ExportBuildDirectory + "/" + ZoneExportDirectory)
+	mkPath(log, ExportBuildDirectory + "/" + ZoneWeldBuildDirectory)
+	files = findFiles(log, ExportBuildDirectory + "/" + ZoneExportDirectory, "", ".zone")
+	for file in files:
+		sourceFile = ExportBuildDirectory + "/" + ZoneExportDirectory + "/" + file
+		destFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + os.path.basename(file)[0:-len(".zone")] + ".zonew"
+		if needUpdateLogRemoveDest(log, sourceFile, destFile):
+			subprocess.call([ ExecTimeout, str(ZoneBuildWeldTimeout), ZoneWelder, sourceFile, destFile ])
+printLog(log, "")
 
 # For each zone directory
-printLog(log, ">>> Weld zone without heightmap <<<")
+printLog(log, ">>> Build zone weld no heightmap <<<")
 if ZoneWelder == "":
 	toolLogFail(log, ZoneWelderTool, ToolSuffix)
 elif ExecTimeout == "":
@@ -129,42 +128,6 @@ else:
 	for file in files:
 		sourceFile = ExportBuildDirectory + "/" + ZoneExportDirectory + "/" + file
 		destFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + os.path.basename(file)[0:-len(".zonenh")] + ".zonenhw"
-		if needUpdateLogRemoveDest(log, sourceFile, destFile):
-			subprocess.call([ ExecTimeout, str(ZoneBuildWeldTimeout), ZoneWelder, sourceFile, destFile ])
-printLog(log, "")
-
-printLog(log, ">>> Apply zone heightmap to welded zone <<<")
-if ZoneElevation == "":
-	toolLogFail(log, ZoneElevationTool, ToolSuffix)
-else:
-	mkPath(log, ExportBuildDirectory + "/" + ZoneWeldBuildDirectory)
-	mkPath(log, DatabaseDirectory + "/" + LigoBaseSourceDirectory);
-	land = DatabaseDirectory + "/" + LigoBaseSourceDirectory + "/" + LigoExportLand
-	heightMap1 = DatabaseDirectory + "/" + LigoBaseSourceDirectory + "/" + LigoExportHeightmap1
-	heightMap2 = DatabaseDirectory + "/" + LigoBaseSourceDirectory + "/" + LigoExportHeightmap2
-	files = findFiles(log, ExportBuildDirectory + "/" + ZoneWeldBuildDirectory, "", ".zonenhw")
-	for file in files:
-		sourceFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + file
-		destFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + os.path.basename(file)[0:-len(".zonenhw")] + ".zone"
-		if needUpdateLogRemoveDest(log, sourceFile, destFile):
-			command = [ ZoneElevation, sourceFile, destFile, "--land", land, "--heightmap", heightMap1, "--zfactor", LigoExportZFactor1, "--heightmap2", heightMap2, "--zfactor2", LigoExportZFactor2 ]
-			if LigoExportExtendCoords != 0:
-				command.append("--extendcoords")
-			callParallelProcess(command)
-	flushParallelProcesses()
-printLog(log, "")
-
-printLog(log, ">>> Re-weld zone with heightmap <<<")
-if ZoneWelder == "":
-	toolLogFail(log, ZoneWelderTool, ToolSuffix)
-elif ExecTimeout == "":
-	toolLogFail(log, ExecTimeoutTool, ToolSuffix)
-else:
-	mkPath(log, ExportBuildDirectory + "/" + ZoneWeldBuildDirectory)
-	files = findFiles(log, ExportBuildDirectory + "/" + ZoneWeldBuildDirectory, "", ".zone")
-	for file in files:
-		sourceFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + file
-		destFile = ExportBuildDirectory + "/" + ZoneWeldBuildDirectory + "/" + os.path.basename(file)[0:-len(".zone")] + ".zonew"
 		if needUpdateLogRemoveDest(log, sourceFile, destFile):
 			subprocess.call([ ExecTimeout, str(ZoneBuildWeldTimeout), ZoneWelder, sourceFile, destFile ])
 printLog(log, "")

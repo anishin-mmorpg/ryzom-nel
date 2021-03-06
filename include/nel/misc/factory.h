@@ -1,5 +1,5 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
-// Copyright (C) 2010-2019  Winch Gate Property Limited
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -58,8 +58,12 @@ public:
 	static CFactory &instance()
 	{
 		// Singleton instance pointer.
-		static CFactory	instance;
-		return instance;
+		static CFactory	*instance = NULL;
+		if (!instance)
+		{
+			instance = new CFactory();
+		}
+		return *instance;
 	}
 
 	/** Register a factorable object in the factory.
@@ -181,8 +185,12 @@ public:
 	/// Get the singleton instance reference.
 	static CFactoryIndirect &instance()
 	{
-		static CFactoryIndirect	instance;
-		return instance;
+		static CFactoryIndirect	*instance = NULL;
+		if (!instance)
+		{
+			instance = new CFactoryIndirect();
+		}
+		return *instance;
 	}
 
 	void registerClass(const KeyType &key, IFactoryIndirectRegister<BaseFactoryClass> *factoryRegister)

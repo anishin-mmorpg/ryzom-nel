@@ -1,13 +1,5 @@
-/**
-* Build Sound
-* \file build_sound.cpp
-* \brief Build Sound
-* \date 2009-06-02 21:25GMT
-* \author Jan Boon (Kaetemi)
-*/
-
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
-// Copyright (C) 2009-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -56,10 +48,6 @@ namespace {
 //           your build script system.                                //
 ////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////
-// this tool is deprecated by build_samplebank and build_soundbank //
-/////////////////////////////////////////////////////////////////////
-
 int main(int nNbArg, char **ppArgs)
 {
 	// create debug stuff
@@ -107,9 +95,7 @@ int main(int nNbArg, char **ppArgs)
 	
 	// add search paths
 	CPath::addSearchPath(leveldesignDir, true, false);
-	std::string relativeDfnDir = dfnDir; // only add dfn if not a subdir of leveldesignDir
-	if (!CPath::makePathRelative(leveldesignDir, dfnDir) || relativeDfnDir.size() < 2 || (relativeDfnDir[0] == '.' && relativeDfnDir[1] == '.'))
-		CPath::addSearchPath(dfnDir, true, false);
+	CPath::addSearchPath(dfnDir, true, false);
 
 	// create the audio mixer
 	UAudioMixer *audioMixer = UAudioMixer::createAudioMixer();

@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2019-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -360,13 +356,13 @@ namespace NLGUI
 	{
 		if (!args.empty())
 		{
-			string res;
+			ucstring res;
 			for (uint32 i = 0; i < args.size(); ++i)
 			{
 				args[i].toString();
-				res += args[i].getString();
+				res += args[i].getUCString();
 			}
-			result.setString (res);
+			result.setUCString (res);
 
 			return true;
 		}
@@ -553,19 +549,9 @@ namespace NLGUI
 			case CReflectedProperty::String:
 				result.setString ((elem->*(pRP->GetMethod.GetString))());
 			break;
-#ifdef RYZOM_LUA_UCSTRING
 			case CReflectedProperty::UCString:
-				result.setString ((elem->*(pRP->GetMethod.GetUCString))().toUtf8());
+				result.setUCString ((elem->*(pRP->GetMethod.GetUCString))());
 			break;
-#endif
-			case CReflectedProperty::StringRef:
-				result.setString ((elem->*(pRP->GetMethod.GetStringRef))());
-			break;
-#ifdef RYZOM_LUA_UCSTRING
-			case CReflectedProperty::UCStringRef:
-				result.setString ((elem->*(pRP->GetMethod.GetUCStringRef))().toUtf8());
-			break;
-#endif
 			case CReflectedProperty::RGBA:
 				result.setRGBA ((elem->*(pRP->GetMethod.GetRGBA))());
 			break;
@@ -1077,7 +1063,7 @@ namespace NLGUI
 		}
 
 		sint64 nVal = args[0].getInteger();
-		string sTmp;
+		ucstring sTmp;
 
 		if (nVal < 0) nVal = 0;
 
@@ -1104,7 +1090,7 @@ namespace NLGUI
 			}
 		}
 
-		result.setString(sTmp);
+		result.setUCString(sTmp);
 
 		return true;
 	}
@@ -1126,7 +1112,7 @@ namespace NLGUI
 		}
 
 		sint64 nVal = args[0].getInteger();
-		string sTmp;
+		ucstring sTmp;
 
 		if (nVal < 0) nVal = 0;
 
@@ -1155,7 +1141,7 @@ namespace NLGUI
 			}
 		}
 
-		result.setString(sTmp);
+		result.setUCString(sTmp);
 
 		return true;
 	}
@@ -1191,7 +1177,7 @@ namespace NLGUI
 			  nlwarning("localize : 1 arg required");
 			  return false;
 		 }
-		 result.setString(CI18N::get(args[0].getString()));
+		 result.setUCString(CI18N::get(args[0].getString()));
 		 return true;
 	}
 	REGISTER_INTERFACE_USER_FCT("localize", localize);

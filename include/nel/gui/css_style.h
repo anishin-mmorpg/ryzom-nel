@@ -20,15 +20,12 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
 #include "nel/gui/css_selector.h"
-#include "nel/gui/css_types.h"
 
 namespace NLGUI
 {
 	class CHtmlElement;
 
 	typedef std::map<std::string, std::string> TStyle;
-	typedef std::pair<std::string, std::string> TStylePair;
-	typedef std::vector<TStylePair> TStyleVec;
 
 	/**
 	 * \brief CSS style rules
@@ -65,14 +62,9 @@ namespace NLGUI
 			Height=-1;
 			MaxWidth=-1;
 			MaxHeight=-1;
-			// border style
-			BorderTopWidth = BorderRightWidth = BorderBottomWidth = BorderLeftWidth = CSS_LINE_WIDTH_MEDIUM;
-			BorderTopStyle = BorderRightStyle = BorderBottomStyle = BorderLeftStyle = CSS_LINE_STYLE_NONE;
-			BorderTopColor = BorderRightColor = BorderBottomColor = BorderLeftColor = NLMISC::CRGBA::Transparent;
-			// background
+			BorderWidth=-1;
 			BackgroundColor=NLMISC::CRGBA::Black;
 			BackgroundColorOver=NLMISC::CRGBA::Black;
-			PaddingTop = PaddingRight = PaddingBottom = PaddingLeft = 0;
 		}
 
 		bool hasStyle(const std::string &key) const
@@ -101,12 +93,9 @@ namespace NLGUI
 		sint32 Height;
 		sint32 MaxWidth;
 		sint32 MaxHeight;
-		uint32 BorderTopWidth, BorderRightWidth, BorderBottomWidth, BorderLeftWidth;
-		CSSLineStyle BorderTopStyle, BorderRightStyle, BorderBottomStyle, BorderLeftStyle;
-		NLMISC::CRGBA BorderTopColor, BorderRightColor, BorderBottomColor, BorderLeftColor;
+		sint32 BorderWidth;
 		NLMISC::CRGBA BackgroundColor;
 		NLMISC::CRGBA BackgroundColorOver;
-		uint32 PaddingTop, PaddingRight, PaddingBottom, PaddingLeft;
 
 		std::string WhiteSpace;
 		std::string TextAlign;
@@ -117,10 +106,9 @@ namespace NLGUI
 
 	class CCssStyle {
 	public:
-
 		struct SStyleRule {
 			std::vector<CCssSelector> Selector;
-			TStyleVec Properties;
+			TStyle Properties;
 
 			// pseudo element like ':before'
 			std::string PseudoElement;
@@ -144,9 +132,6 @@ namespace NLGUI
 		// test if str is one of "thin/medium/thick" and return its pixel value
 		bool scanCssLength(const std::string& str, uint32 &px) const;
 
-		// split css properties string, ie '1px solid rgb(100, 100, 100)' split by ' ' returns 3 parts.
-		void splitParams(const std::string &str, char sep, std::vector<std::string> &result) const;
-
 		// read style attribute
 		void getStyleParams(const std::string &styleString, CStyleParams &style, const CStyleParams &current) const;
 		void getStyleParams(const TStyle &styleRules, CStyleParams &style, const CStyleParams &current) const;
@@ -158,35 +143,13 @@ namespace NLGUI
 		void apply(CStyleParams &style, const CStyleParams &current) const;
 
 		// merge src into dest by overwriting key in dest
-		void merge(TStyle &dst, const TStyleVec &src) const;
+		void merge(TStyle &dst, const TStyle &src) const;
 
 		// match selector to dom path
 		bool match(const std::vector<CCssSelector> &selector, const CHtmlElement &elm) const;
 
-		// get shorthang 'top right bottom left' index values based size, ie 'padding' syntax
-		bool getShorthandIndices(const uint32 size, uint8 &t, uint8 &r, uint8 &b, uint8 &l) const;
-
-		// break 'border' into 'border-top-color', 'border-top-style', etc rules
-		bool tryBorderWidthShorthand(const std::string &prop, const std::string &value, TStyle &style) const;
-		bool tryBorderStyleShorthand(const std::string &prop, const std::string &value, TStyle &style) const;
-		bool tryBorderColorShorthand(const std::string &prop, const std::string &value, TStyle &style) const;
-		void expandBorderShorthand(const std::string &prop, const std::string &value, TStyle &style) const;
-
 		// parse 'background' into 'background-color', 'background-image', etc
-		void expandBackgroundShorthand(const std::string &value, TStyle &style) const;
-
-		// parse 'padding' into 'padding-top', 'padding-left', etc
-		void expandPaddingShorthand(const std::string &value, TStyle &style) const;
-
-		// expand shorthand rule, ie "border", into longhand names, ie "border-top-width"
-		// if shorthand is present in style, then its removed
-		void expandShorthand(const std::string &prop, const std::string &value, TStyle &style) const;
-
-		// parse string value into corresponding value
-		void applyBorderWidth(const std::string &value, uint32 *dest, const uint32 currentWidth, const uint32 fontSize) const;
-		void applyBorderColor(const std::string &value, NLMISC::CRGBA *dest, const NLMISC::CRGBA &currentColor, const NLMISC::CRGBA &textColor) const;
-		void applyLineStyle(const std::string &value, CSSLineStyle *dest, const CSSLineStyle &currentStyle) const;
-		void applyPaddingWidth(const std::string &value, uint32 *dest, const uint32 currentPadding, uint32 fontSize) const;
+		void parseBackgroundShorthand(const std::string &value, CStyleParams &style) const;
 
 	public:
 		void reset();
@@ -204,27 +167,26 @@ namespace NLGUI
 			return Current.FontSize-2;
 		}
 
+		sint styleStackIndex = 0;
+
 		inline void pushStyle()
 		{
+			styleStackIndex++;
 			_StyleStack.push_back(Current);
 
-			Current.GlobalColor = false;
 			Current.DisplayBlock = false;
 			Current.Width=-1;
 			Current.Height=-1;
 			Current.MaxWidth=-1;
 			Current.MaxHeight=-1;
-
-			Current.BorderTopWidth = Current.BorderRightWidth = Current.BorderBottomWidth = Current.BorderLeftWidth = CSS_LINE_WIDTH_MEDIUM;
-			Current.BorderTopStyle = Current.BorderRightStyle = Current.BorderBottomStyle = Current.BorderLeftStyle = CSS_LINE_STYLE_NONE;
-			Current.BorderTopColor = Current.BorderRightColor = Current.BorderBottomColor = Current.BorderLeftColor = Current.TextColor;
-			Current.PaddingTop = Current.PaddingRight = Current.PaddingBottom = Current.PaddingLeft = 0;
+			Current.BorderWidth=-1;
 
 			Current.StyleRules.clear();
 		}
 
 		inline void popStyle()
 		{
+			styleStackIndex--;
 			if (_StyleStack.empty())
 			{
 				Current = Root;

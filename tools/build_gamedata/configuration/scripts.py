@@ -23,7 +23,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 # 
 
-import time, sys, os, shutil, subprocess, distutils.dir_util, multiprocessing, math
+import time, sys, os, shutil, subprocess, distutils.dir_util
 
 ActiveProjectDirectory = os.getenv("NELBUILDACTIVEPROJECT", "configuration/project")
 sys.path.append(ActiveProjectDirectory)
@@ -31,27 +31,6 @@ sys.path.append(ActiveProjectDirectory)
 def printLog(log, text):
 	log.write(text + "\n")
 	print text
-
-pendingProcesses = []
-processLimit = math.ceil(multiprocessing.cpu_count() * 0.75)
-
-def callParallelProcess(command):
-	res = 0
-	if len(pendingProcesses) >= processLimit:
-		waitingProc = pendingProcesses.pop(0)
-		res = waitingProc.wait()
-	proc = subprocess.Popen(command)
-	pendingProcesses.append(proc)
-	return res
-
-def flushParallelProcesses():
-	res = 0
-	while (len(pendingProcesses) > 0):
-		waitingProc = pendingProcesses.pop(0)
-		procRes = waitingProc.wait()
-		if procRes != 0:
-			res = procRes
-	return res
 
 def mkPath(log, path):
 	printLog(log, "DIR " + path)
@@ -562,10 +541,9 @@ def needUpdateDirNoSubdirLogExtMultidir(log, all_dir_base, all_dir_source, dir_s
 def findFileMultiDir(log, dirs_where, file_name):
 	try:
 		for dir in dirs_where:
-			if dir != "":
-				file = findFile(log, dir, file_name)
-				if file != "":
-					return file
+			file = findFile(log, dir, file_name)
+			if file != "":
+				return file
 	except Exception, e:
 		printLog(log, "EXCEPTION " + str(e))
 	printLog(log, "FILE NOT FOUND " + file_name)
@@ -574,11 +552,10 @@ def findFileMultiDir(log, dirs_where, file_name):
 def findTool(log, dirs_where, file_name, suffix):
 	try:
 		for dir in dirs_where:
-			if dir != "":
-				tool = findFile(log, dir, file_name + suffix)
-				if tool != "":
-					printLog(log, "TOOL " + tool)
-					return tool
+			tool = findFile(log, dir, file_name + suffix)
+			if tool != "":
+				printLog(log, "TOOL " + tool)
+				return tool
 	except Exception, e:
 		printLog(log, "EXCEPTION " + str(e))
 	printLog(log, "TOOL NOT FOUND " + file_name + suffix)

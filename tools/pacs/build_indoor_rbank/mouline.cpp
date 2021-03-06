@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -19,7 +16,6 @@
 
 #include <map>
 #include <vector>
-#include <sstream>
 
 #include "nel/pacs/collision_mesh_build.h"
 #include "nel/pacs/local_retriever.h"
@@ -282,26 +278,24 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 
 		for (i=0; i<bchains.size(); ++i)
 		{
-			char w[256];
-			std::stringstream ss;
+			static char	buf[512], w[256];
 			const CChain	&chain = chains[bchains[i]];
-			sprintf(w, "Border chain %d: chain=%d ", i, bchains[i]);
-			ss << w;
+			sprintf(buf, "Border chain %d: chain=%d ", i, bchains[i]);
 			uint	och;
 			for (och=0; och<chain.getSubChains().size(); ++och)
 			{
 				const COrderedChain3f	&ochain = ochains[chain.getSubChain(och)];
 				sprintf(w, "subchain=%d", chain.getSubChain(och));
-				ss << w;
+				strcat(buf, w);
 				uint	v;
 				for (v=0; v<ochain.getVertices().size(); ++v)
 				{
 					sprintf(w, " (%.2f,%.2f)", ochain[v].x, ochain[v].y);
-					ss << w;
+					strcat(buf, w);
 				}
 			}
 
-			nlinfo("%s", ss.str().c_str());
+			nlinfo("%s", buf);
 		}
 	}
 

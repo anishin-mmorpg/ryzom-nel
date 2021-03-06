@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -1583,14 +1579,6 @@ static bool	setupATIMeminfo(const char *glext)
 void	registerGlExtensions(CGlExtensions &ext)
 {
 	H_AUTO_OGL(registerGlExtensions);
-
-#ifdef NL_OS_MAC
-	CGLContextObj ctx = CGLGetCurrentContext();
-	if (ctx == NULL)
-	{
-		nlerror("No OpenGL context set");
-	}
-#endif
 
 	// OpenGL 1.2 ??
 	const char	*nglVersion = (const char *)glGetString (GL_VERSION);

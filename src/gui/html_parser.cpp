@@ -57,7 +57,7 @@ namespace NLGUI
 
 	// ***************************************************************************
 	// recursive function to walk html document
-	void CHtmlParser::parseNode(xmlNode *a_node, CHtmlElement &parent, std::vector<std::string> &styles, std::vector<StyleLink> &links) const
+	void CHtmlParser::parseNode(xmlNode *a_node, CHtmlElement &parent, std::string &styleString, std::vector<std::string> &links) const
 	{
 		uint childIndex = 0;
 		uint element_number;
@@ -89,7 +89,7 @@ namespace NLGUI
 					}
 				}
 
-				parent.Children.push_back(CHtmlElement(CHtmlElement::ELEMENT_NODE, toLowerAscii((const char*)node->name)));
+				parent.Children.push_back(CHtmlElement(CHtmlElement::ELEMENT_NODE, toLower((const char*)node->name)));
 				CHtmlElement &elm = parent.Children.back();
 				elm.ID = element_number;
 				elm.parent = &parent;
@@ -109,7 +109,7 @@ namespace NLGUI
 				elm.Attributes.clear();
 
 				for (xmlAttr *cur_attr = node->properties; cur_attr; cur_attr = cur_attr->next) {
-					std::string key(toLowerAscii((const char *)(cur_attr->name)));
+					std::string key(toLower((const char *)(cur_attr->name)));
 					std::string value;
 					if (cur_attr->children)
 					{
@@ -124,7 +124,7 @@ namespace NLGUI
 					NLMISC::splitString(elm.getAttribute("class"), " ", parts);
 					for(uint i = 0; i<parts.size();++i)
 					{
-						elm.ClassNames.insert(toLowerAscii(trim(parts[i])));
+						elm.ClassNames.insert(toLower(trim(parts[i])));
 					}
 				}
 
@@ -136,7 +136,7 @@ namespace NLGUI
 					bool useStyle = true;
 					if (elm.hasAttribute("media"))
 					{
-						std::string media = trim(toLowerAscii(elm.Attributes["media"]));
+						std::string media = trim(toLower(elm.Attributes["media"]));
 						useStyle = media.empty() || media.find("all") != std::string::npos || media.find("screen") != std::string::npos;
 
 						// <style media="ryzom"> for ingame browser
@@ -145,9 +145,7 @@ namespace NLGUI
 
 					if (useStyle)
 					{
-						std::string style;
-						parseStyle(node->children, style);
-						styles.push_back(style);
+						parseStyle(node->children, styleString);
 					}
 					// style tag is kept in dom
 				}
@@ -156,7 +154,7 @@ namespace NLGUI
 					bool useStyle = true;
 					if (elm.hasAttribute("media"))
 					{
-						std::string media = trim(toLowerAscii(elm.Attributes["media"]));
+						std::string media = trim(toLower(elm.Attributes["media"]));
 						useStyle = media.empty() || media.find("all") != std::string::npos || media.find("screen") != std::string::npos;
 
 						// <style media="ryzom"> for ingame browser
@@ -165,14 +163,13 @@ namespace NLGUI
 
 					if (useStyle)
 					{
-						styles.push_back("");
-						links.push_back(StyleLink(styles.size()-1, elm.getAttribute("href")));
+						links.push_back(elm.getAttribute("href"));
 					}
 					// link tag is kept in dom
 				}
 				else if (node->children)
 				{
-					parseNode(node->children, elm, styles, links);
+					parseNode(node->children, elm, styleString, links);
 
 					// must cleanup nested tags that libxml2 does not fix
 					// dt without end tag: <dl><dt><dt></dl>
@@ -192,35 +189,6 @@ namespace NLGUI
 						}
 						elm.reindexChilds();
 						parent.reindexChilds();
-					}
-
-					// move all <tr> directly under <table> to its own <tbody> ("table > tbody > tr" selector).
-					// TODO: move first real <thead> to front, move first real <tfoot> at the end
-					if (elm.ID == HTML_TABLE)
-					{
-						std::list<CHtmlElement>::iterator it = elm.Children.begin();
-						std::list<CHtmlElement>::iterator tbody = elm.Children.end();
-						for(it = elm.Children.begin(); it != elm.Children.end(); ++it)
-						{
-							if (it->ID == HTML_TR)
-							{
-								if (tbody == elm.Children.end())
-								{
-									tbody = elm.Children.insert(it, CHtmlElement(CHtmlElement::ELEMENT_NODE, "tbody"));
-									tbody->ID = HTML_TBODY;
-									tbody->parent = &elm;
-								}
-								tbody->Children.splice(tbody->Children.end(), elm.Children, it);
-								it = tbody;
-							}
-							else if (tbody != elm.Children.end())
-							{
-								tbody->reindexChilds();
-								tbody = elm.Children.end();
-							}
-						}
-
-						elm.reindexChilds();
 					}
 				}
 			}
@@ -409,7 +377,7 @@ namespace NLGUI
 	}
 
 	// ***************************************************************************
-	void CHtmlParser::getDOM(std::string htmlString, CHtmlElement &dom, std::vector<std::string> &styles, std::vector<StyleLink> &links) const
+	void CHtmlParser::getDOM(std::string htmlString, CHtmlElement &dom, std::string &styleString, std::vector<std::string> &links) const
 	{
 		htmlParserCtxtPtr parser = htmlCreatePushParserCtxt(NULL, NULL, NULL, 0, NULL, XML_CHAR_ENCODING_UTF8);
 		if (!parser)
@@ -431,7 +399,8 @@ namespace NLGUI
 			xmlNode *root = xmlDocGetRootElement(parser->myDoc);
 			if (root)
 			{
-				parseNode(root, dom, styles, links);
+				styleString.clear();
+				parseNode(root, dom, styleString, links);
 			}
 			else
 			{

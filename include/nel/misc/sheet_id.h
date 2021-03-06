@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2012-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -59,19 +56,9 @@ public :
 	explicit CSheetId( uint32 sheetRef = 0 );
 
 	/**
-	*	Constructor
-	*/
-	explicit CSheetId( int sheetRef );
-
-	/**
 	 *	Constructor
 	 */
 	explicit CSheetId( const std::string& sheetName );
-
-	/**
-	*	Operator=
-	*/
-	explicit CSheetId( const char *sheetName );
 
 	/**
 	 * Constructor, uses defaultType as extension when sheetName
@@ -79,22 +66,8 @@ public :
 	 */
 	explicit CSheetId( const std::string& sheetName, const std::string &defaultType );
 
-	/**
-	* Constructor, uses defaultType as extension when sheetName
-	* contains no file extension.
-	*/
-	explicit CSheetId( const std::string& sheetName, const char *defaultType );
-
-	/**
-	* Constructor, uses defaultType as extension when sheetName
-	* contains no file extension.
-	*/
-	explicit CSheetId( const char *sheetName, const char *defaultType );
-
 	// build from a string and returns true if the build succeed
-	bool buildSheetId(const char *sheetName, size_t sheetNameLen);
-	inline bool buildSheetId(const char *sheetName) { return buildSheetId(sheetName, strlen(sheetName)); }
-	inline bool buildSheetId(const std::string &sheetName) { return buildSheetId(sheetName.c_str(), sheetName.size()); }
+	bool	 buildSheetId(const std::string& sheetName);
 
 	// build from a SubSheetId and a type
 	void	 buildSheetId(uint32 shortId, uint32 type);
@@ -117,22 +90,17 @@ public :
 	/**
 	 * Return the **whole** sheet id (id+type)
 	 */
-	inline uint32 asInt() const { return _Id.Id; }
+	uint32 asInt() const { return _Id.Id; }
 
 	/**
 	 * Return the sheet type (sub part of the sheetid)
 	 */
-	inline uint32 getSheetType() const { return _Id.IdInfos.Type; }
+	uint32 getSheetType() const { return _Id.IdInfos.Type; }
 
 	/**
 	 * Return the sheet sub id (sub part of the sheetid)
 	 */
-	inline uint32 getShortId() const { return _Id.IdInfos.Id; }
-
-	/**
-	*	Operator bool
-	*/
-	inline operator bool() const { return _Id.Id; }
+	uint32 getShortId() const { return _Id.IdInfos.Id; }
 
 	/**
 	 *	Operator=
@@ -145,19 +113,9 @@ public :
 	CSheetId& operator=( const std::string& sheetName );
 
 	/**
-	*	Operator=
-	*/
-	CSheetId& operator=( const char *sheetName );
-
-	/**
 	 *	Operator=
 	 */
 	CSheetId& operator=( uint32 sheetRef );
-
-	/**
-	*	Operator=
-	*/
-	CSheetId& operator=( int sheetRef );
 
 	/**
 	 *	Operator<
@@ -257,12 +215,9 @@ private :
 		}
 	};
 
-	typedef CStaticMap<uint32, CChar> TSheetIdToNameMap;
-	typedef CStaticMap<CChar, uint32, CCharComp> TSheetNameToIdMap;
-
 	static CChar _AllStrings;
-	static TSheetIdToNameMap _SheetIdToName;
-	static TSheetNameToIdMap _SheetNameToId;
+	static CStaticMap<uint32, CChar> _SheetIdToName;
+	static CStaticMap<CChar,uint32, CCharComp> _SheetNameToId;
 
 	static std::vector<std::string> _FileExtensions;
 	static bool _Initialised;

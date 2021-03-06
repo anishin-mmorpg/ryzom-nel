@@ -3,8 +3,8 @@
 
 build_soundbank  <leveldesign> <dfn> <build_packed_sheets>
 
-leveldesign = R:\leveldesign\
-dfn = R:\leveldesign\dfn\
+leveldesign = L:\leveldesign\
+dfn = L:\leveldesign\dfn\
 build_packed_sheets = L:\build\sound_sheets\
 Where L:\ is your game content database.
 

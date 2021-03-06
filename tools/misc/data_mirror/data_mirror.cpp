@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -108,21 +105,21 @@ BOOL CData_mirrorApp::InitInstance()
 
 		cf.load (path);
 		MainDirectory = cf.getVar ("MainDirectory").asString ();
-		MainDirectory = toLowerAscii (CPath::standardizePath (MainDirectory));
+		MainDirectory = toLower (CPath::standardizePath (MainDirectory));
 		
 		MirrorDirectory = cf.getVar ("MirrorDirectory").asString ();
-		MirrorDirectory = toLowerAscii (CPath::standardizePath (MirrorDirectory));
+		MirrorDirectory = toLower (CPath::standardizePath (MirrorDirectory));
 		
 		LogDirectory = cf.getVar ("LogDirectory").asString ();
-		LogDirectory = toLowerAscii (CPath::standardizePath (LogDirectory));
+		LogDirectory = toLower (CPath::standardizePath (LogDirectory));
 		
 		IgnoreDirectory = cf.getVar ("IgnoreDirectory").asString ();
-		IgnoreDirectory = toLowerAscii (CPath::standardizePath (IgnoreDirectory));
+		IgnoreDirectory = toLower (CPath::standardizePath (IgnoreDirectory));
 		if (IgnoreDirectory.empty())
 			IgnoreDirectory = MainDirectory;
 
 		string sBinaryCompare = cf.getVar ("BinaryCompare").asString ();
-		sBinaryCompare = toLowerAscii (sBinaryCompare);
+		sBinaryCompare = toLower (sBinaryCompare);
 		BinaryCompare = false;
 		if ((sBinaryCompare == "true") || (sBinaryCompare=="1"))
 			BinaryCompare = true;
@@ -145,12 +142,12 @@ BOOL CData_mirrorApp::InitInstance()
 		if (NLMISC::CFile::isDirectory (CurrentDir))
 		{
 			directory = true;
-			CurrentDir = toLowerAscii(CPath::standardizePath (CurrentDir));
+			CurrentDir = toLower(CPath::standardizePath (CurrentDir));
 		}
 		else if (NLMISC::CFile::fileExists (CurrentDir))
 		{
 			directory = false;
-			CurrentDir = toLowerAscii(CPath::standardizePath (NLMISC::CFile::getPath (CurrentDir)));
+			CurrentDir = toLower(CPath::standardizePath (NLMISC::CFile::getPath (CurrentDir)));
 		}
 		else
 		{

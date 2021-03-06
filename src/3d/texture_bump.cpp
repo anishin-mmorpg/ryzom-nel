@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -29,31 +26,9 @@
 
 namespace NL3D {
 
-namespace /* anonymous */ {
 
-// Map that give the normalization factor for each map from its sharename. This avoid to generate several time the maps to get the normalization factor if a bumpmap is shared by severals CTextureBump instances;
-struct CNormalizationInfo
-{
-	uint  NumRefs;
-	float NormalizationFactor;
-};
-typedef std::map<std::string, CNormalizationInfo> TNameToNI; // sharename to the normalization factor
-class CNameToNFStatic {
-public:
-	TNameToNI Map;
-	bool Initialized;
-	CNameToNFStatic() : Initialized(true)
-	{
-		
-	}
-	~CNameToNFStatic()
-	{
-		Initialized = false;
-	}
-};
-CNameToNFStatic s_NameToNF;
+CTextureBump::TNameToNI CTextureBump::_NameToNF;
 
-} /* anonymous namespace */
 
 #define GET_HGT(x, y) ((sint) ((src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8))
 /// create a DsDt texture from a height map (red component of a rgba bitmap)
@@ -267,15 +242,14 @@ void CTextureBump::doGenerate(bool async)
 	}
 	// create entry in the map for the normalization factor
 	std::string shareName = getShareName();
-	nlassertverbose(s_NameToNF.Initialized);
-	TNameToNI::iterator it = s_NameToNF.Map.find(shareName);
-	if (it == s_NameToNF.Map.end())
+	TNameToNI::iterator it = _NameToNF.find(shareName);
+	if (it == _NameToNF.end())
 	{
 		// create a new entry
 		CNormalizationInfo ni;
 		ni.NumRefs = 1;
 		ni.NormalizationFactor = normalizationFactor;
-		std::pair<TNameToNI::iterator, bool> pb = s_NameToNF.Map.insert(TNameToNI::value_type(shareName, ni));
+		std::pair<TNameToNI::iterator, bool> pb = _NameToNF.insert(TNameToNI::value_type(shareName, ni));
 		_NormalizationFactor = &(pb.first->second.NormalizationFactor);
 	}
 	else
@@ -329,9 +303,8 @@ float CTextureBump::getNormalizationFactor()
 	if (!_HeightMap) return 1.f;
 	// not computed yet, see if another map has computed it
 	std::string shareName = getShareName();
-	nlassertverbose(s_NameToNF.Initialized);
-	TNameToNI::iterator it = s_NameToNF.Map.find(shareName);
-	if (it != s_NameToNF.Map.end())
+	TNameToNI::iterator it = _NameToNF.find(shareName);
+	if (it != _NameToNF.end())
 	{
 		_NormalizationFactor = &(it->second.NormalizationFactor);
 		++(it->second.NumRefs);
@@ -347,16 +320,16 @@ float CTextureBump::getNormalizationFactor()
 ///==============================================================================================
 CTextureBump::~CTextureBump()
 {
-	if (s_NameToNF.Initialized && _NormalizationFactor && !s_NameToNF.Map.empty())
+	if (_NormalizationFactor && !_NameToNF.empty())
 	{
 		// find normalization factor from its name
-		TNameToNI::iterator it = s_NameToNF.Map.find(getShareName());
+		TNameToNI::iterator it = _NameToNF.find(getShareName());
 
 		// if found
-		if (it != s_NameToNF.Map.end())
+		if (it != _NameToNF.end())
 		{
 			// we can delete it only if it's not used anymore
-			if (--(it->second.NumRefs) == 0) s_NameToNF.Map.erase(it);
+			if (--(it->second.NumRefs) == 0) _NameToNF.erase(it);
 		}
 	}
 }

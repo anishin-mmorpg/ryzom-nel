@@ -1,10 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -29,7 +25,6 @@
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 #include "nel/misc/debug.h"
-#include "nel/misc/utf_string_view.h"
 
 #ifdef DEBUG_NEW
 #define new DEBUG_NEW
@@ -538,7 +533,8 @@ bool CUnixEventEmitter::processMessage (XEvent &event, CEventServer *server)
 		if (c > 0)
 		{
 #ifdef X_HAVE_UTF8_STRING
-			::u32string ucstr = NLMISC::CUtfStringView(Text).toUtf32();
+			ucstring ucstr;
+			ucstr.fromUtf8(Text);
 
 			CEventChar *charEvent = new CEventChar (ucstr[0], getKeyButton(event.xbutton.state), this);
 
@@ -547,10 +543,9 @@ bool CUnixEventEmitter::processMessage (XEvent &event, CEventServer *server)
 
 			server->postEvent (charEvent);
 #else
-			// FIXME: Convert locale to UTF-32
 			for (int i = 0; i < c; i++)
 			{
-				CEventChar *charEvent = new CEventChar ((u32char)(unsigned char)Text[i], getKeyButton(event.xbutton.state), this);
+				CEventChar *charEvent = new CEventChar ((ucchar)(unsigned char)Text[i], getKeyButton(event.xbutton.state), this);
 
 				// raw if not processed by IME
 				charEvent->setRaw(keyCode != 0);
@@ -611,13 +606,14 @@ bool CUnixEventEmitter::processMessage (XEvent &event, CEventServer *server)
 		else if (req.target == XA_STRING)
 		{
 			respond.xselection.property = req.property;
-			std::string str = _CopiedString; // NLMISC::CUtfStringView(_CopiedString).toAscii(); // FIXME: Convert UTF-8 to local
+			std::string str = _CopiedString.toString();
 			XChangeProperty(req.display, req.requestor, req.property, XA_STRING, 8, PropModeReplace, (const unsigned char*)str.c_str(), str.length());
 		}
 		else if (req.target == XA_UTF8_STRING)
 		{
 			respond.xselection.property = req.property;
-			XChangeProperty(req.display, req.requestor, respond.xselection.property, XA_UTF8_STRING, 8, PropModeReplace, (const unsigned char*)_CopiedString.c_str(), _CopiedString.length());
+			std::string str = _CopiedString.toUtf8();
+			XChangeProperty(req.display, req.requestor, respond.xselection.property, XA_UTF8_STRING, 8, PropModeReplace, (const unsigned char*)str.c_str(), str.length());
 		}
 		else
 		{
@@ -699,22 +695,22 @@ bool CUnixEventEmitter::processMessage (XEvent &event, CEventServer *server)
 			if (XGetWindowProperty(_dpy, _win, XA_NEL_SEL, 0, XMaxRequestSize(_dpy), False, AnyPropertyType, &actualType, &actualFormat, &nitems, &bytesLeft, (unsigned char**)&data) != Success)
 				return false;
 
-			std::string text = (const char*)data;
+			ucstring text;
+			std::string tmpData = (const char*)data;
 			XFree(data);
 
 			// convert buffer to ucstring
 			if (target == XA_UTF8_STRING)
 			{
-				// OK
+				text = ucstring::makeFromUtf8(tmpData);
 			}
 			else if (target == XA_STRING)
 			{
-				// FIXME: Convert local to UTF-8
-				// text = NLMISC::CUtfStringView(text).toAscii();
+				text = tmpData;
 			}
 			else
 			{
-				nlwarning("Unknown format %u", (uint)target);
+				nlwarning("Unknow format %u", (uint)target);
 			}
 
 			// sent string event to event server
@@ -768,7 +764,7 @@ bool CUnixEventEmitter::processMessage (XEvent &event, CEventServer *server)
 	return true;
 }
 
-bool CUnixEventEmitter::copyTextToClipboard(const std::string &text)
+bool CUnixEventEmitter::copyTextToClipboard(const ucstring &text)
 {
 	_CopiedString = text;
 
@@ -787,7 +783,7 @@ bool CUnixEventEmitter::copyTextToClipboard(const std::string &text)
 	return true;
 }
 
-bool CUnixEventEmitter::pasteTextFromClipboard(std::string &text)
+bool CUnixEventEmitter::pasteTextFromClipboard(ucstring &text)
 {
 	// check if we own the selection
 	if (_SelectionOwned)

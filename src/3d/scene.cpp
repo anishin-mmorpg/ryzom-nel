@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -775,9 +772,9 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 
 	// Look if this instance get lightmap information
 #if defined(__GNUC__) && __GNUC__ < 3
-	CMeshBase *pMB = pTShp ? (CMeshBase*)((IShape*)(pTShp->Shape)) : NULL;
+	CMeshBase *pMB = (CMeshBase*)((IShape*)(pTShp->Shape));
 #else // not GNUC
-	CMeshBase *pMB = pTShp ? dynamic_cast<CMeshBase*>((IShape*)(pTShp->Shape)) : NULL;
+	CMeshBase *pMB = dynamic_cast<CMeshBase*>((IShape*)(pTShp->Shape));
 #endif // not GNUC
 	CMeshBaseInstance *pMBI = dynamic_cast<CMeshBaseInstance*>( pTShp );
 	if( ( pMB != NULL ) && ( pMBI != NULL ) )
@@ -793,7 +790,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 			if (pMB->getAutoAnim())
 			{
 
-				std::string animName = toLowerAscii(CFile::getFilenameWithoutExtension(shapeName));
+				std::string animName = toLower(CFile::getFilenameWithoutExtension(shapeName));
 				uint animID = _AutomaticAnimationSet->getAnimationIdByName(animName);
 				if (animID != CAnimationSet::NotFound)
 				{
@@ -833,7 +830,7 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 	if (_ShapeBank->getPresentState( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file asynchronously
-		_ShapeBank->loadAsync( toLowerAscii(shapeName), getDriver(), position, NULL, selectedTexture);
+		_ShapeBank->loadAsync( toLower(shapeName), getDriver(), position, NULL, selectedTexture);
 	}
 }
 

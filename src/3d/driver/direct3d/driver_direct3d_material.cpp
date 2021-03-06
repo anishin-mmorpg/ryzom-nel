@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -706,13 +703,9 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 				// Set the texture states
 				if (text || (stage == 0))
 				{
-					if (matShader == CMaterial::Program)
+					// Doesn't use a pixel shader ? Set the textures stages
+					if (pShader->PixelShader == NULL)
 					{
-						// Do nothing for user pixel shader
-					}
-					else if (!pShader->PixelShader)
-					{
-						// Doesn't use a pixel shader ? Set the textures stages
 						if (pShader->RGBPipe[stage])
 						{
 							setTextureState (stage, D3DTSS_COLOROP, pShader->ColorOp[stage]);
@@ -1149,7 +1142,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 
 			}
 			break;
-		case CMaterial::Cloud:
+			case CMaterial::Cloud:
 			{
 				H_AUTO_D3D(CDriverD3D_setupMaterial_setupCloudShader)
 				activeShader (&_ShaderCloud);
@@ -1171,7 +1164,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					return false;
 			}
 			break;
-		case CMaterial::Water:
+			case CMaterial::Water:
 			{
 				H_AUTO_D3D(CDriverD3D_setupMaterial_setupWaterShader)
 				activeShader(mat.getTexture(3) ? &_ShaderWaterDiffuse : &_ShaderWaterNoDiffuse);
@@ -1300,14 +1293,7 @@ bool CDriverD3D::setupMaterial(CMaterial &mat)
 					}
 				}
 			}
-			break; // CMaterial::Water
-		case CMaterial::Program:
-			{
-				H_AUTO_D3D(CDriverD3D_setupMaterial_setupProgramshader)
-					// No material shader
-					activeShader(NULL);
-			}
-			break;
+			// CMaterial::Water
 		}
 
 		// New material setuped

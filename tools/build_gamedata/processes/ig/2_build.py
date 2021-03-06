@@ -54,8 +54,6 @@ mkPath(log, configDir)
 
 def igElevation(inputIgDir, outputIgDir):
 	printLog(log, ">>> IG Elevation <<<")
-	mkPath(log, inputIgDir)
-	mkPath(log, outputIgDir)
 	needUpdateIg = needUpdateDirByTagLog(log, inputIgDir, ".ig", outputIgDir, ".ig")
 	if needUpdateIg:
 		printLog(log, "DETECT UPDATE IG->Elevated")
@@ -94,7 +92,6 @@ def igElevation(inputIgDir, outputIgDir):
 		cf.write("ZFactor1 = " + LigoExportZFactor1 + ";\n")
 		cf.write("HeightMapFile2 = \"" + DatabaseDirectory + "/" + LigoBaseSourceDirectory + "/" + LigoExportHeightmap2 + "\";\n")
 		cf.write("ZFactor2 = " + LigoExportZFactor2 + ";\n")
-		cf.write("ExtendCoords = " + str(LigoExportExtendCoords) + ";\n")
 		cf.write("\n")
 		cf.write("LandFile = \"" + DatabaseDirectory + "/" + LigoBaseSourceDirectory + "/" + LigoExportLand + "\";\n")
 		cf.write("\n")
@@ -103,7 +100,7 @@ def igElevation(inputIgDir, outputIgDir):
 		os.remove(configFile)
 		
 		# Copy remaining IG files
-		#BUG:copyFilesLogless(log, inputIgDir, outputIgDir)
+		copyFilesLogless(log, inputIgDir, outputIgDir)
 	else:
 		printLog(log, "DETECT DECIDE SKIP")
 		printLog(log, "SKIP *")

@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -24,7 +21,7 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/ucstring.h"
 #include "nel/misc/matrix.h"
-#include "nel/misc/utf_string_view.h"
+
 
 namespace NL3D {
 
@@ -104,11 +101,8 @@ public:
 		 */
 		float StringLine;
 
-		/// The length in characters
-		size_t StringLength;
-
-		CStringInfo() { StringWidth = StringHeight = StringLine = 0; StringLength = 0; }
-		CStringInfo(float w, float h, float l, size_t len) { StringWidth = w; StringHeight = h; StringLine = l; StringLength = len; }
+		CStringInfo() {StringWidth= StringHeight= StringLine= 0;}
+		CStringInfo(float w, float h, float l)  {StringWidth= w; StringHeight= h; StringLine = l;}
 
 		/**
 		 *	Get the string's origin
@@ -251,7 +245,7 @@ public:
 	 * \param an ucstring
 	 * \return the index where computed string has been inserted
 	 */
-	virtual	uint32			textPush (NLMISC::CUtfStringView sv) = 0;
+	virtual	uint32			textPush (const ucstring &str) = 0;
 	/**
 	 * set the color of a string.
 	 */
@@ -277,12 +271,7 @@ public:
 	 * Get a string information from the ucstring
 	 *	The returned string info is in pixel size per default.
 	 */
-	virtual	CStringInfo		getStringInfo (NLMISC::CUtfStringView sv) = 0;
-	/**
-	* Get a string information from the ucstring
-	*	The returned string info is in pixel size per default.
-	*/
-	virtual	CStringInfo		getStringInfo (NLMISC::CUtfStringView sv, size_t len) = 0;
+	virtual	CStringInfo		getStringInfo (const ucstring &ucstr) = 0;
 	/**
 	 * empty the map
 	 */
@@ -307,7 +296,7 @@ public:
 	/**
 	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */
-	virtual	void			printAt (float x, float y, NLMISC::CUtfStringView sv) = 0;
+	virtual	void			printAt (float x, float y, const ucstring &ucstr) = 0;
 	/**
 	 * compute and print a string at the location (2D method) x/y E [0,1]
 	 */
@@ -317,7 +306,7 @@ public:
 	 * compute and render a ucstring at the location (3D method)
 	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).
 	 */
-	virtual	void			render3D (const NLMISC::CMatrix &mat, NLMISC::CUtfStringView sv) = 0;
+	virtual	void			render3D (const NLMISC::CMatrix &mat, const ucstring &ucstr) = 0;
 	/**
 	 * compute and render a string at the location (3D method)
 	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).

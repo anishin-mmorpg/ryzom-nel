@@ -7,9 +7,6 @@
  */
 
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
-// Copyright (C) 2008-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
-// This source file has been modified by the following contributors:
 // Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
@@ -108,7 +105,7 @@ public:
 	bool play(const std::string &filepath, uint xFadeTime = 0, bool async = true, bool loop = true); 
 
 	/// Stop the music previously loaded and played (the Memory is also freed)
-	bool stop(uint xFadeTime = 0);
+	void stop(uint xFadeTime = 0);
 
 	/// Pause the music previously loaded and played (the Memory is not freed)
 	void pause();

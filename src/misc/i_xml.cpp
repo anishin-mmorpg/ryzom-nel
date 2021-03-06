@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -174,16 +171,16 @@ bool CIXml::init (IStream &stream)
 		// Try binary mode
 		if (_TryBinaryMode)
 		{
-			char header[5];
+			string header;
+			header.resize(4);
 			header[0] = buffer[0];
 			header[1] = buffer[1];
 			header[2] = buffer[2];
 			header[3] = buffer[3];
-			header[4] = '\0';
-			toLowerAscii(header);
+			toLower(header);
 
 			// Does it a xml stream ?
-			if (strcmp(header, "<?xm"))
+			if (header != "<?xm")
 			{
 				// NO ! Go in binary mode
 				_BinaryStream = &stream;

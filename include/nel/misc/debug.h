@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2015-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -88,9 +85,6 @@ void createDebug (const char *logPath = NULL, bool logInFile = true, bool eraseL
 
 /// Do not call this, unless you know what you're trying to do (it kills debug)!
 void destroyDebug();
-
-/// Attach exception handler, for new threads and fibers
-void attachExceptionHandler();
 
 // call this if you want to change the dir of the log.log file
 void changeLogDirectory(const std::string &dir);
@@ -355,16 +349,13 @@ void	setCrashAlreadyReported(bool state);
  * Same as nlassertex(false,exp);
  */
 
-#if defined(NL_DEBUG) /* Debug break is only useful in debug builds */
+// removed because we always check assert (even in release mode) #if defined (NL_OS_WINDOWS) && defined (NL_DEBUG)
 #if defined(NL_OS_WINDOWS)
 #define NLMISC_BREAKPOINT __debugbreak()
 #elif defined(NL_OS_UNIX) && defined(NL_COMP_GCC)
 #define NLMISC_BREAKPOINT __builtin_trap()
 #else
 #define NLMISC_BREAKPOINT abort()
-#endif
-#else
-#define NLMISC_BREAKPOINT do { } while (0)
 #endif
 
 // Internal, don't use it (make smaller assert code)
@@ -374,19 +365,13 @@ extern bool _assertex_stop_1(bool &ignoreNextTime);
 
 // removed because we always check assert (even in release mode) #if defined(NL_DEBUG)
 
-#if defined(_MSC_VER) && _MSC_VER >= 1500
-#define nlassume(exp) do { __analysis_assume(exp); } while (0) // __analysis_assume doesn't evaluate the expression at runtime
-#else
-#define nlassume(exp) do { } while (0)
-#endif
-
 #ifdef NL_NO_DEBUG
-#	define nlassert(exp) nlassume(exp)
-#	define nlassertonce(exp) nlassume(exp)
-#	define nlassertex(exp, str) nlassume(exp)
-#	define nlverify(exp) do { exp; nlassume(exp); } while (0)
-#	define nlverifyonce(exp) do { exp; nlassume(exp); } while (0)
-#	define nlverifyex(exp, str) do { exp; nlassume(exp); } while (0)
+#	define nlassert(exp) if(false)
+#	define nlassertonce(exp) if(false)
+#	define nlassertex(exp, str) if(false)
+#	define nlverify(exp) { exp; }
+#	define nlverifyonce(exp) { exp; }
+#	define nlverifyex(exp, str) { exp; }
 #else // NL_NO_DEBUG
 
 #	ifdef NL_OS_UNIX
@@ -395,29 +380,25 @@ extern bool _assertex_stop_1(bool &ignoreNextTime);
 
 #define nlassert(exp) \
 do { \
-	bool _expResult_ = (exp) ? true : false; \
-	if (!(_expResult_)) { \
+	if (!(exp)) { \
 		NLMISC::createDebug (); \
 		NLMISC::INelContext::getInstance().getAssertLog()->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::INelContext::getInstance().getAssertLog()->displayNL ("\"%s\" ", #exp); \
 		NLMISC_BREAKPOINT; \
 	} \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlassertonce(exp) nlassert(exp)
 
 #define nlassertex(exp, str) \
 do { \
-	bool _expResult_ = (exp) ? true : false; \
-	if (!(_expResult_)) { \
+	if (!(exp)) { \
 		NLMISC::createDebug (); \
 		NLMISC::INelContext::getInstance().getAssertLog()->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::INelContext::getInstance().getAssertLog()->displayNL ("\"%s\" ", #exp); \
 		NLMISC::INelContext::getInstance().getAssertLog()->displayRawNL str; \
 		NLMISC_BREAKPOINT; \
 	} \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlverify(exp) nlassert(exp)
@@ -435,19 +416,16 @@ do { \
 			NLMISC_BREAKPOINT; \
 	} \
 	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlassertonce(exp) \
 do { \
 	static bool ignoreNextTime = false; \
-	bool _expResult_ = (exp) ? true : false; \
-	if (!ignoreNextTime && !(_expResult_)) { \
+	if (!ignoreNextTime && !(exp)) { \
 		ignoreNextTime = true; \
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlassertex(exp, str) \
@@ -461,7 +439,6 @@ do { \
 			NLMISC_BREAKPOINT; \
 	} \
 	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlverify(exp) \
@@ -473,7 +450,6 @@ do { \
 			NLMISC_BREAKPOINT; \
 	} \
 	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlverifyonce(exp) \
@@ -485,7 +461,6 @@ do { \
 		if(NLMISC::_assert_stop(ignoreNextTime, __LINE__, __FILE__, __FUNCTION__, #exp)) \
 			NLMISC_BREAKPOINT; \
 	} \
-	nlassume(_expResult_); \
 } while(0)
 
 #define nlverifyex(exp, str) \
@@ -499,21 +474,11 @@ do { \
 			NLMISC_BREAKPOINT; \
 	} \
 	ASSERT_THROW_EXCEPTION_CODE_EX(_expResult_, #exp) \
-	nlassume(_expResult_); \
 } while(0)
 
 #	endif // NL_OS_UNIX
 
 #endif // NL_NO_DEBUG
-
-// Same as nlassert and nlverify, but only in DEV build
-#if !FINAL_VERSION
-#define nlassertverbose(exp) nlassert(exp)
-#define nlverifyverbose(exp) nlverify(exp)
-#else
-#define nlassertverbose(exp) nlassume(exp)
-#define nlverifyverbose(exp) do { exp; nlassume(exp); } while (0)
-#endif
 
 #define nlunreferenced(identifier) (void)identifier
 
@@ -621,7 +586,7 @@ template<class T, class U>	inline T	type_cast(U o)
 /** Compile time assertion
   */
 #ifdef NL_ISO_CPP0X_AVAILABLE
-#	define nlctassert(cond) static_assert((cond), "Compile time assert in "#cond)
+#	define nlctassert(cond) static_assert(cond, "Compile time assert in "#cond)
 #else
 #	define nlctassert(cond) (void)sizeof(uint[(cond) ? 1 : 0])
 #endif

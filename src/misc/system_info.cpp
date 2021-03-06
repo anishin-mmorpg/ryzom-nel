@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2014-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -179,6 +176,7 @@
 #else
 #	include <sys/types.h>
 #	include <sys/stat.h>
+#	include <sys/sysctl.h>
 #	include <fcntl.h>
 #	include <unistd.h>
 #	include <cerrno>
@@ -1420,7 +1418,6 @@ bool CSystemInfo::hasHyperThreading()
 
 		// get vendor string from cpuid
 		char vendor_id[32];
-		vendor_id[31] = '\0';
 		memset(vendor_id, 0, sizeof(vendor_id));
 		nlcpuid(CPUInfo, 0);
 		memcpy(vendor_id, &CPUInfo[1], sizeof(sint32));
@@ -1690,7 +1687,7 @@ bool CSystemInfo::getVideoInfo (std::string &deviceName, uint64 &driverVersion)
 						}
 						else
 						{
-							string::size_type pos = toLowerAscii(keyPath).find ("\\device");
+							string::size_type pos = toLower(keyPath).find ("\\device");
 							if (pos != string::npos)
 								keyPath = keyPath.substr (0, pos+1);
 							keyName = "ImagePath";
@@ -1703,7 +1700,7 @@ bool CSystemInfo::getVideoInfo (std::string &deviceName, uint64 &driverVersion)
 					}
 
 					// Format the key path
-					if (toLowerAscii(keyPath).find ("\\registry\\machine") == 0)
+					if (toLower(keyPath).find ("\\registry\\machine") == 0)
 					{
 						keyPath = "HKEY_LOCAL_MACHINE" + keyPath.substr (strlen ("\\registry\\machine"));
 					}
@@ -1733,7 +1730,7 @@ bool CSystemInfo::getVideoInfo (std::string &deviceName, uint64 &driverVersion)
 					HKEY keyRoot = HKEY_LOCAL_MACHINE;
 					for (i=0; i<sizeof(rootKeysH)/sizeof(HKEY); i++)
 					{
-						if (toUpperAscii(keyPath).find (rootKeys[i]) == 0)
+						if (toUpper(keyPath).find (rootKeys[i]) == 0)
 						{
 							keyPath = keyPath.substr (strlen (rootKeys[i]));
 							keyRoot = rootKeysH[i];

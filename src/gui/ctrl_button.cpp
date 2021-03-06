@@ -1,9 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -210,21 +207,21 @@ namespace NLGUI
 		prop = (char*) xmlGetProp( cur, (xmlChar*)"tx_normal" );
 		if (prop)
 		{
-			string TxName = NLMISC::toLowerAscii((const char *) prop);
+			string TxName = NLMISC::toLower((const char *) prop);
 			_TextureIdNormal.setTexture(TxName.c_str());
 		}
 
 		prop = (char*) xmlGetProp( cur, (xmlChar*)"tx_pushed" );
 		if (prop)
 		{
-			string TxName = NLMISC::toLowerAscii((const char *) prop);
+			string TxName = NLMISC::toLower((const char *) prop);
 			_TextureIdPushed.setTexture(TxName.c_str());
 		}
 
 		prop = (char*) xmlGetProp( cur, (xmlChar*)"tx_over" );
 		if (prop)
 		{
-			string TxName = NLMISC::toLowerAscii((const char *) prop);
+			string TxName = NLMISC::toLower((const char *) prop);
 			_TextureIdOver.setTexture(TxName.c_str());
 		}
 

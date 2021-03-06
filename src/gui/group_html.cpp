@@ -1,9 +1,5 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
-// Copyright (C) 2010-2019  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2019-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -27,7 +23,6 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/algo.h"
-#include "nel/misc/utf_string_view.h"
 #include "nel/gui/libwww.h"
 #include "nel/gui/group_html.h"
 #include "nel/gui/group_list.h"
@@ -52,12 +47,11 @@
 #include "nel/gui/url_parser.h"
 #include "nel/gui/http_cache.h"
 #include "nel/gui/http_hsts.h"
-#include "nel/web/curl_certificates.h"
+#include "nel/gui/curl_certificates.h"
 #include "nel/gui/html_parser.h"
 #include "nel/gui/html_element.h"
 #include "nel/gui/css_style.h"
 #include "nel/gui/css_parser.h"
-#include "nel/gui/css_border_renderer.h"
 
 #include <curl/curl.h>
 
@@ -89,7 +83,7 @@ namespace NLGUI
 	// Return URL with https is host is in HSTS list
 	static std::string upgradeInsecureUrl(const std::string &url)
 	{
-		if (toLowerAscii(url.substr(0, 7)) != "http://") {
+		if (toLower(url.substr(0, 7)) != "http://") {
 			return url;
 		}
 
@@ -136,7 +130,7 @@ namespace NLGUI
 				if (pos == std::string::npos)
 					return;
 
-				std::string key = toLowerAscii(header.substr(0, pos));
+				std::string key = toLower(header.substr(0, pos));
 				if (pos != std::string::npos)
 				{
 					HeadersRecv[key] = header.substr(pos + 2);
@@ -185,7 +179,7 @@ namespace NLGUI
 			bool hasHSTSHeader()
 			{
 				// ignore header if not secure connection
-				if (toLowerAscii(Url.substr(0, 8)) != "https://")
+				if (toLower(Url.substr(0, 8)) != "https://")
 				{
 					return false;
 				}
@@ -292,38 +286,28 @@ namespace NLGUI
 			{
 				btn->setTextureOver(file);
 			}
-
-			return;
 		}
-
-		CViewBitmap *btm = dynamic_cast<CViewBitmap*>(view);
-		if(btm)
+		else
 		{
-			btm->setTexture (file);
-			btm->invalidateCoords();
-			btm->invalidateContent();
-			paragraphChange();
-
-			return;
-		}
-
-		CGroupCell *btgc = dynamic_cast<CGroupCell*>(view);
-		if(btgc)
-		{
-			btgc->setTexture (file);
-			btgc->invalidateCoords();
-			btgc->invalidateContent();
-			paragraphChange();
-
-			return;
-		}
-
-		CGroupTable *table = dynamic_cast<CGroupTable*>(view);
-		if (table)
-		{
-			table->setTexture(file);
-
-			return;
+			CViewBitmap *btm = dynamic_cast<CViewBitmap*>(view);
+			if(btm)
+			{
+				btm->setTexture (file);
+				btm->invalidateCoords();
+				btm->invalidateContent();
+				paragraphChange();
+			}
+			else
+			{
+				CGroupCell *btgc = dynamic_cast<CGroupCell*>(view);
+				if(btgc)
+				{
+					btgc->setTexture (file);
+					btgc->invalidateCoords();
+					btgc->invalidateContent();
+					paragraphChange();
+				}
+			}
 		}
 	}
 
@@ -449,9 +433,10 @@ namespace NLGUI
 	{
 		if (pVT)
 		{
+			pVT->setFontSize(style.FontSize);
 			pVT->setColor(style.TextColor);
 			pVT->setFontName(style.FontFamily);
-			pVT->setFontSize(style.FontSize, false);
+			pVT->setFontSize(style.FontSize);
 			pVT->setEmbolden(style.FontWeight >= FONT_WEIGHT_BOLD);
 			pVT->setOblique(style.FontOblique);
 			pVT->setUnderlined(style.Underlined);
@@ -552,10 +537,10 @@ namespace NLGUI
 		LOG_DL("curl easy handle %p created for '%s'", curl, download.url.c_str());
 
 		// https://
-		if (toLowerAscii(download.url.substr(0, 8)) == "https://")
+		if (toLower(download.url.substr(0, 8)) == "https://")
 		{
 			// if supported, use custom SSL context function to load certificates
-			NLWEB::CCurlCertificates::useCertificates(curl);
+			CCurlCertificates::useCertificates(curl);
 		}
 
 		download.data = new CCurlWWWData(curl, download.url);
@@ -664,12 +649,10 @@ namespace NLGUI
 
 		if (download.type == StylesheetType)
 		{
-			if (CFile::fileExists(tmpfile))
+			// no tmpfile if file was already in cache
+			if (CFile::fileExists(tmpfile) && CFile::fileExists(download.dest))
 			{
-				if (CFile::fileExists(download.dest))
-				{
-					CFile::deleteFile(download.dest);
-				}
+				CFile::deleteFile(download.dest);
 				CFile::moveFile(download.dest, tmpfile);
 			}
 			cssDownloadFinished(download.url, download.dest);
@@ -714,18 +697,10 @@ namespace NLGUI
 	}
 
 	// Add a image download request in the multi_curl
-	void CGroupHTML::addImageDownload(const string &url, CViewBase *img, const CStyleParams &style, TImageType type, const std::string &placeholder)
+	void CGroupHTML::addImageDownload(const string &url, CViewBase *img, const CStyleParams &style, TImageType type)
 	{
 		std::string finalUrl;
 		img->setModulateGlobalColor(style.GlobalColor);
-
-		// data:image/png;base64,AA...==
-		if (startsWith(url, "data:image/"))
-		{
-			setImage(img, decodeURIComponent(url), type);
-			setImageSize(img, style);
-			return;
-		}
 
 		// load the image from local files/bnp
 		std::string image = CFile::getPath(url) + CFile::getFilenameWithoutExtension(url) + ".tga";
@@ -748,7 +723,8 @@ namespace NLGUI
 			std::string temp = dest;
 			if (!CFile::fileExists(temp))
 			{
-				temp = placeholder;
+				// TODO: placeholder
+				temp = "web_del.tga";
 			}
 			setImage(img, temp, type);
 			setImageSize(img, style);
@@ -858,16 +834,21 @@ namespace NLGUI
 			CFile::createDirectory( pathName );
 	}
 
-	void CGroupHTML::addStylesheetDownload(const std::vector<CHtmlParser::StyleLink> links)
+	void CGroupHTML::addStylesheetDownload(std::vector<std::string> links)
 	{
 		for(uint i = 0; i < links.size(); ++i)
 		{
-			_StylesheetQueue.push_back(links[i]);
-			std::string url = getAbsoluteUrl(links[i].Url);
-			_StylesheetQueue.back().Url = url;
+			std::string url = getAbsoluteUrl(links[i]);
+			std::string local = localImageName(url);
 
-			// push to the front of the queue
-			Curls.push_front(CDataDownload(url, localImageName(url), StylesheetType, NULL, "", ""));
+			// insert only if url not already downloading
+			std::vector<std::string>::const_iterator it = std::find(_StylesheetQueue.begin(), _StylesheetQueue.end(), url);
+			if (it == _StylesheetQueue.end())
+			{
+				_StylesheetQueue.push_back(url);
+				// push to the front of the queue
+				Curls.push_front(CDataDownload(url, local, StylesheetType, NULL, "", ""));
+			}
 		}
 		pumpCurlQueue();
 	}
@@ -1029,7 +1010,7 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	void CGroupHTML::addText (const char *buf, int len)
+	void CGroupHTML::addText (const char * buf, int len)
 	{
 		if (_Browsing)
 		{
@@ -1037,43 +1018,44 @@ namespace NLGUI
 				return;
 
 			// Build a UTF8 string
+			string inputString(buf, buf+len);
+
 			if (_ParsingLua && _TrustedDomain)
 			{
 				// we are parsing a lua script
-				_LuaScript += string(buf, buf + len);
+				_LuaScript += inputString;
 				// no more to do
 				return;
 			}
 
 			// Build a unicode string
-			CUtfStringView inputStringView(buf, len);
+			ucstring inputUCString;
+			inputUCString.fromUtf8(inputString);
 
 			// Build the final unicode string
-			string tmp;
+			ucstring tmp;
 			tmp.reserve(len);
-			u32char lastChar = 0;
-			u32char inputStringView0 = *inputStringView.begin();
-			for (CUtfStringView::iterator it(inputStringView.begin()), end(inputStringView.end()); it != end; ++it)
+			uint ucLen = (uint)inputUCString.size();
+			for (uint i=0; i<ucLen; i++)
 			{
-				u32char output;
+				ucchar output;
 				bool keep;
 				// special treatment for 'nbsp' (which is returned as a discreet space)
-				if (len == 1 && inputStringView0 == 32)
+				if (inputString.size() == 1 && inputString[0] == 32)
 				{
 					// this is a nbsp entity
-					output = *it;
+					output = inputUCString[i];
 					keep = true;
 				}
 				else
 				{
 					// not nbsp, use normal white space removal routine
-					keep = translateChar (output, *it, lastChar);
+					keep = translateChar (output, inputUCString[i], (tmp.empty())?0:tmp[tmp.size()-1]);
 				}
 
 				if (keep)
 				{
-					CUtfStringView::append(tmp, output);
-					lastChar = output;
+					tmp.push_back(output);
 				}
 			}
 
@@ -1162,10 +1144,8 @@ namespace NLGUI
 		case HTML_STRONG:   renderPseudoElement(":before", elm); break;
 		case HTML_STYLE:    htmlSTYLE(elm); break;
 		case HTML_TABLE:    htmlTABLE(elm); break;
-		case HTML_TBODY:    renderPseudoElement(":before", elm); break;
 		case HTML_TD:       htmlTD(elm); break;
 		case HTML_TEXTAREA: htmlTEXTAREA(elm); break;
-		case HTML_TFOOT:    renderPseudoElement(":before", elm); break;
 		case HTML_TH:       htmlTH(elm); break;
 		case HTML_TITLE:    htmlTITLE(elm); break;
 		case HTML_TR:       htmlTR(elm); break;
@@ -1196,7 +1176,7 @@ namespace NLGUI
 		case HTML_DT:       htmlDTend(elm); break;
 		case HTML_EM:       renderPseudoElement(":after", elm);break;
 		case HTML_FONT:     break;
-		case HTML_FORM:     htmlFORMend(elm); break;
+		case HTML_FORM:     renderPseudoElement(":after", elm);break;
 		case HTML_H1://no-break
 		case HTML_H2://no-break
 		case HTML_H3://no-break
@@ -1226,9 +1206,7 @@ namespace NLGUI
 		case HTML_STYLE:    htmlSTYLEend(elm); break;
 		case HTML_TABLE:    htmlTABLEend(elm); break;
 		case HTML_TD:       htmlTDend(elm); break;
-		case HTML_TBODY:    renderPseudoElement(":after", elm); break;
 		case HTML_TEXTAREA: htmlTEXTAREAend(elm); break;
-		case HTML_TFOOT:    renderPseudoElement(":after", elm); break;
 		case HTML_TH:       htmlTHend(elm); break;
 		case HTML_TITLE:    htmlTITLEend(elm); break;
 		case HTML_TR:       htmlTRend(elm); break;
@@ -1261,12 +1239,13 @@ namespace NLGUI
 
 		// TODO: 'content' should already be tokenized in css parser as it has all the functions for that
 		std::string content = trim(_Style.getStyle("content"));
-		if (toLowerAscii(content) == "none" || toLowerAscii(content) == "normal")
+		if (toLower(content) == "none" || toLower(content) == "normal")
 		{
 			_Style.popStyle();
 			return;
 		}
 
+		// TODO: use ucstring / ucchar as content is utf8 chars
 		std::string::size_type pos = 0;
 		while(pos < content.size())
 		{
@@ -1286,12 +1265,12 @@ namespace NLGUI
 					pos++;
 				}
 				token = content.substr(start, pos - start);
-				addString(token);
+				addString(ucstring::makeFromUtf8(token));
 
 				// skip closing quote
 				pos++;
 			}
-			else if (content[pos] == 'u' && pos < content.size() - 6 && toLowerAscii(content.substr(pos, 4)) == "url(")
+			else if (content[pos] == 'u' && pos < content.size() - 6 && toLower(content.substr(pos, 4)) == "url(")
 			{
 				// url(/path-to/image.jpg) / "Alt!"
 				// url("/path to/image.jpg") / "Alt!"
@@ -1369,7 +1348,7 @@ namespace NLGUI
 
 				if (elm.hasAttribute(token))
 				{
-					addString(elm.getAttribute(token));
+					addString(ucstring::makeFromUtf8(elm.getAttribute(token)));
 				}
 			}
 			else
@@ -1449,8 +1428,6 @@ namespace NLGUI
 		_LastRefreshTime = 0.0;
 		_RenderNextTime = false;
 		_WaitingForStylesheet = false;
-		_AutoIdSeq = 0;
-		_FormOpen = false;
 
 		// Register
 		CWidgetManager::getInstance()->registerClockMsgTarget(this);
@@ -1516,9 +1493,6 @@ namespace NLGUI
 
 		initImageDownload();
 		initBnpDownload();
-
-		// setup default browser style
-		setProperty("browser_css_file", "browser.css");
 	}
 
 	// ***************************************************************************
@@ -1555,7 +1529,7 @@ namespace NLGUI
 		else
 		if( name == "title_prefix" )
 		{
-			return _TitlePrefix;
+			return _TitlePrefix.toString();
 		}
 		else
 		if( name == "background_color" )
@@ -1796,11 +1770,6 @@ namespace NLGUI
 		if( name == "timeout" )
 		{
 			return toString( _TimeoutValue );
-		}
-		else
-		if( name == "browser_css_file" )
-		{
-			return _BrowserCssFile;
 		}
 		else
 			return CGroupScrollText::getProperty( name );
@@ -2176,36 +2145,6 @@ namespace NLGUI
 			return;
 		}
 		else
-		if( name == "browser_css_file")
-		{
-			_BrowserStyle.reset();
-			_BrowserCssFile = value;
-			if (!_BrowserCssFile.empty())
-			{
-				std::string filename = CPath::lookup(_BrowserCssFile, false, true, true);
-				if (!filename.empty())
-				{
-					CIFile in;
-					if (in.open(filename))
-					{
-						std::string css;
-						if (in.readAll(css))
-							_BrowserStyle.parseStylesheet(css);
-						else
-							nlwarning("Failed to read browser css from '%s'", filename.c_str());
-					}
-					else
-					{
-						nlwarning("Failed to open browser css file '%s'", filename.c_str());
-					}
-				}
-				else
-				{
-					nlwarning("Browser css file '%s' not found", _BrowserCssFile.c_str());
-				}
-			}
-		}
-		else
 			CGroupScrollText::setProperty( name, value );
 	}
 
@@ -2217,7 +2156,7 @@ namespace NLGUI
 
 		xmlSetProp( node, BAD_CAST "type", BAD_CAST "html" );
 		xmlSetProp( node, BAD_CAST "url", BAD_CAST _URL.c_str() );
-		xmlSetProp( node, BAD_CAST "title_prefix", BAD_CAST _TitlePrefix.c_str() );
+		xmlSetProp( node, BAD_CAST "title_prefix", BAD_CAST _TitlePrefix.toString().c_str() );
 		xmlSetProp( node, BAD_CAST "background_color", BAD_CAST toString( BgColor ).c_str() );
 		xmlSetProp( node, BAD_CAST "error_color", BAD_CAST toString( ErrorColor ).c_str() );
 		xmlSetProp( node, BAD_CAST "link_color", BAD_CAST toString( LinkColor ).c_str() );
@@ -2278,7 +2217,6 @@ namespace NLGUI
 		xmlSetProp( node, BAD_CAST "browse_redo", BAD_CAST _BrowseRedoButton.c_str() );
 		xmlSetProp( node, BAD_CAST "browse_refresh", BAD_CAST _BrowseRefreshButton.c_str() );
 		xmlSetProp( node, BAD_CAST "timeout", BAD_CAST toString( _TimeoutValue ).c_str() );
-		xmlSetProp( node, BAD_CAST "browser_css_file", BAD_CAST _BrowserCssFile.c_str() );
 
 		return node;
 	}
@@ -2462,12 +2400,6 @@ namespace NLGUI
 		if(ptr)
 			fromString((const char*)ptr, _TimeoutValue);
 
-		ptr = xmlGetProp (cur, (xmlChar*)"browser_css_file");
-		if (ptr)
-		{
-			setProperty("browser_css_file", (const char *)ptr);
-		}
-
 		return true;
 	}
 
@@ -2539,7 +2471,6 @@ namespace NLGUI
 	{
 		// Add a new paragraph
 		CGroupParagraph *newParagraph = new CGroupParagraph(CViewBase::TCtorParam());
-		newParagraph->setId(getCurrentGroup()->getId() + ":PARAGRAPH" + toString(getNextAutoIdSeq()));
 		newParagraph->setResizeFromChildH(true);
 
 		newParagraph->setMarginLeft(getIndent());
@@ -2597,7 +2528,6 @@ namespace NLGUI
 		// go
 		_URL = uri.toString();
 		_BrowseNextTime = true;
-		_WaitingForStylesheet = false;
 
 		// if a BrowseTree is bound to us, try to select the node that opens this URL (auto-locate)
 		if(!_BrowseTree.empty())
@@ -2662,14 +2592,10 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	bool CGroupHTML::translateChar(u32char &output, u32char input, u32char lastCharParam) const
+	bool CGroupHTML::translateChar(ucchar &output, ucchar input, ucchar lastCharParam) const
 	{
 		// Keep this char ?
 		bool keep = true;
-
-		// char is between table elements
-		// TODO: only whitespace is handled, text is added to either TD, or after TABLE (should be before)
-		bool tableWhitespace = getTable() && (_Cells.empty() || _Cells.back() == NULL);
 
 		switch (input)
 		{
@@ -2677,39 +2603,25 @@ namespace NLGUI
 		case '\t':
 		case '\n':
 			{
-				if (tableWhitespace)
-				{
-					keep = false;
-				}
-				else
-				{
-					// Get the last char
-					u32char lastChar = lastCharParam;
-					if (lastChar == 0)
-						lastChar = getLastChar();
-					keep = ((lastChar != (u32char)' ') &&
-							(lastChar != 0)) || getPRE() || (_CurrentViewImage && (lastChar == 0));
-					if(!getPRE())
-						input = (u32char)' ';
-				}
+				// Get the last char
+				ucchar lastChar = lastCharParam;
+				if (lastChar == 0)
+					lastChar = getLastChar();
+				keep = ((lastChar != (ucchar)' ') &&
+						(lastChar != 0)) || getPRE() || (_CurrentViewImage && (lastChar == 0));
+				if(!getPRE())
+					input = ' ';
 			}
 			break;
 		case ' ':
 			{
-				if (tableWhitespace)
-				{
-					keep = false;
-				}
-				else
-				{
-					// Get the last char
-					u32char lastChar = lastCharParam;
-					if (lastChar == 0)
-						lastChar = getLastChar();
-					keep = ((lastChar != (u32char)' ') &&
-							(lastChar != (u32char)'\n') &&
-							(lastChar != 0)) || getPRE() || (_CurrentViewImage && (lastChar == 0));
-				}
+				// Get the last char
+				ucchar lastChar = lastCharParam;
+				if (lastChar == 0)
+					lastChar = getLastChar();
+				keep = ((lastChar != (ucchar)' ') &&
+						(lastChar != (ucchar)'\n') &&
+						(lastChar != 0)) || getPRE() || (_CurrentViewImage && (lastChar == 0));
 			}
 			break;
 		case 0xd:
@@ -2746,13 +2658,13 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	void CGroupHTML::addString(const std::string &str)
+	void CGroupHTML::addString(const ucstring &str)
 	{
-		string tmpStr = str;
+		ucstring tmpStr = str;
 
 		if (_Localize)
 		{
-			string	_str = tmpStr;
+			string	_str = tmpStr.toString();
 			string::size_type	p = _str.find('#');
 			if (p == string::npos)
 			{
@@ -2793,7 +2705,7 @@ namespace NLGUI
 		}
 		else if (_Object)
 		{
-			_ObjectScript += tmpStr;
+			_ObjectScript += tmpStr.toString();
 		}
 		else if (_SelectOption)
 		{
@@ -2823,7 +2735,7 @@ namespace NLGUI
 			// Number of child in this paragraph
 			if (_CurrentViewLink)
 			{
-				bool skipLine = !_CurrentViewLink->getText().empty() && *(_CurrentViewLink->getText().rbegin()) == '\n';
+				bool skipLine = !_CurrentViewLink->getText().empty() && *(_CurrentViewLink->getText().rbegin()) == (ucchar) '\n';
 				bool sameShadow = style.TextShadow.Enabled && _CurrentViewLink->getShadow();
 				if (sameShadow && style.TextShadow.Enabled)
 				{
@@ -2881,7 +2793,7 @@ namespace NLGUI
 							ctrlButton->setModulateGlobalColorAll (false);
 
 							// Translate the tooltip
-							ctrlButton->setDefaultContextHelp(getLinkTitle());
+							ctrlButton->setDefaultContextHelp(ucstring::makeFromUtf8(getLinkTitle()));
 							ctrlButton->setText(tmpStr);
 							// empty url / button disabled
 							bool disabled = string(getLink()).empty();
@@ -2950,7 +2862,7 @@ namespace NLGUI
 		CViewBitmap *newImage = new CViewBitmap (TCtorParam());
 		newImage->setId(id);
 
-		addImageDownload(img, newImage, style, NormalImage);
+		addImageDownload(img, newImage, style, TImageType::NormalImage);
 		newImage->setRenderLayer(getRenderLayer()+1);
 
 		getParagraph()->addChild(newImage);
@@ -2961,7 +2873,7 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	CInterfaceGroup *CGroupHTML::addTextArea(const std::string &templateName, const char *name, uint rows, uint cols, bool multiLine, const std::string &content, uint maxlength)
+	CInterfaceGroup *CGroupHTML::addTextArea(const std::string &templateName, const char *name, uint rows, uint cols, bool multiLine, const ucstring &content, uint maxlength)
 	{
 		// In a paragraph ?
 		if (!_Paragraph)
@@ -3142,67 +3054,45 @@ namespace NLGUI
 			ctrlButton->setId(name);
 		}
 
-		std::string normal;
-		if (startsWith(normalBitmap, "data:image/"))
-		{
-			normal = decodeURIComponent(normalBitmap);
-		}
-		else
-		{
-			// Load only tga files.. (conversion in dds filename is done in the lookup procedure)
-			normal = normalBitmap.empty()?"":CFile::getPath(normalBitmap) + CFile::getFilenameWithoutExtension(normalBitmap) + ".tga";
+		// Load only tga files.. (conversion in dds filename is done in the lookup procedure)
+		string normal = normalBitmap.empty()?"":CFile::getPath(normalBitmap) + CFile::getFilenameWithoutExtension(normalBitmap) + ".tga";
 
-			// if the image doesn't exist on local, we check in the cache
-			if(!CPath::exists(normal))
+		// if the image doesn't exist on local, we check in the cache
+	//	if(!CFile::fileExists(normal))
+		if(!CPath::exists(normal))
+		{
+			// search in the compressed texture
+			CViewRenderer &rVR = *CViewRenderer::getInstance();
+			sint32 id = rVR.getTextureIdFromName(normal);
+			if(id == -1)
 			{
-				// search in the compressed texture
-				CViewRenderer &rVR = *CViewRenderer::getInstance();
-				sint32 id = rVR.getTextureIdFromName(normal);
-				if(id == -1)
-				{
-					normal = localImageName(normalBitmap);
-					addImageDownload(normalBitmap, ctrlButton, style);
-				}
+				normal = localImageName(normalBitmap);
+				addImageDownload(normalBitmap, ctrlButton, style);
 			}
 		}
 
-		std::string pushed;
-		if (startsWith(pushedBitmap, "data:image/"))
+		string pushed = pushedBitmap.empty()?"":CFile::getPath(pushedBitmap) + CFile::getFilenameWithoutExtension(pushedBitmap) + ".tga";
+		// if the image doesn't exist on local, we check in the cache, don't download it because the "normal" will already setuped it
+	//	if(!CFile::fileExists(pushed))
+		if(!CPath::exists(pushed))
 		{
-			pushed = decodeURIComponent(pushedBitmap);
-		}
-		else
-		{
-			pushed = pushedBitmap.empty()?"":CFile::getPath(pushedBitmap) + CFile::getFilenameWithoutExtension(pushedBitmap) + ".tga";
-			// if the image doesn't exist on local, we check in the cache, don't download it because the "normal" will already setuped it
-			if(!CPath::exists(pushed))
+			// search in the compressed texture
+			CViewRenderer &rVR = *CViewRenderer::getInstance();
+			sint32 id = rVR.getTextureIdFromName(pushed);
+			if(id == -1)
 			{
-				// search in the compressed texture
-				CViewRenderer &rVR = *CViewRenderer::getInstance();
-				sint32 id = rVR.getTextureIdFromName(pushed);
-				if(id == -1)
-				{
-					pushed = localImageName(pushedBitmap);
-				}
+				pushed = localImageName(pushedBitmap);
 			}
 		}
 
-		std::string over;
-		if (startsWith(overBitmap, "data:image/"))
+		string over = overBitmap.empty()?"":CFile::getPath(overBitmap) + CFile::getFilenameWithoutExtension(overBitmap) + ".tga";
+		// schedule mouseover bitmap for download if its different from normal
+		if (!over.empty() && !CPath::exists(over))
 		{
-			over = decodeURIComponent(overBitmap);
-		}
-		else
-		{
-			over = overBitmap.empty()?"":CFile::getPath(overBitmap) + CFile::getFilenameWithoutExtension(overBitmap) + ".tga";
-			// schedule mouseover bitmap for download if its different from normal
-			if (!over.empty() && !CPath::exists(over))
+			if (overBitmap != normalBitmap)
 			{
-				if (overBitmap != normalBitmap)
-				{
-					over = localImageName(overBitmap);
-					addImageDownload(overBitmap, ctrlButton, style, OverImage);
-				}
+				over = localImageName(overBitmap);
+				addImageDownload(overBitmap, ctrlButton, style, OverImage);
 			}
 		}
 
@@ -3227,7 +3117,7 @@ namespace NLGUI
 			}
 			else
 			{
-				ctrlButton->setDefaultContextHelp(tooltip);
+				ctrlButton->setDefaultContextHelp(ucstring::makeFromUtf8(tooltip));
 				//ctrlButton->setOnContextHelp(string(tooltip));
 			}
 
@@ -3269,7 +3159,6 @@ namespace NLGUI
 		_Cells.clear();
 		_TR.clear();
 		_Forms.clear();
-		_FormOpen = false;
 		_FormSubmit.clear();
 		_Groups.clear();
 		_Divs.clear();
@@ -3283,7 +3172,6 @@ namespace NLGUI
 		_ReadingHeadTag = false;
 		_IgnoreHeadTag = false;
 		_IgnoreBaseUrlTag = false;
-		_AutoIdSeq = 0;
 
 		paragraphChange ();
 
@@ -3299,11 +3187,11 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	u32char CGroupHTML::getLastChar() const
+	ucchar CGroupHTML::getLastChar() const
 	{
 		if (_CurrentViewLink)
 		{
-			::u32string str = CUtfStringView(_CurrentViewLink->getText()).toUtf32(); // FIXME: Optimize reverse UTF iteration
+			const ucstring &str = _CurrentViewLink->getText();
 			if (!str.empty())
 				return str[str.length()-1];
 		}
@@ -3395,7 +3283,7 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	void CGroupHTML::setContainerTitle (const std::string &title)
+	void CGroupHTML::setTitle (const ucstring &title)
 	{
 		CInterfaceElement *parent = getParent();
 		if (parent)
@@ -3405,7 +3293,7 @@ namespace NLGUI
 				CGroupContainer *container = dynamic_cast<CGroupContainer*>(parent);
 				if (container)
 				{
-					container->setTitle(title);
+					container->setUCTitle (title);
 				}
 			}
 		}
@@ -3413,18 +3301,21 @@ namespace NLGUI
 
 	void CGroupHTML::setTitle(const std::string &title)
 	{
+		ucstring uctitle;
+		uctitle.fromUtf8(title);
+
 		_TitleString.clear();
 		if(!_TitlePrefix.empty())
 		{
 			_TitleString = _TitlePrefix + " - ";
 		}
-		_TitleString += title;
+		_TitleString += uctitle;
 
-		setContainerTitle(_TitleString);
+		setTitle(_TitleString);
 	}
 
 	std::string CGroupHTML::getTitle() const {
-		return _TitleString;
+		return _TitleString.toUtf8();
 	};
 
 	// ***************************************************************************
@@ -3434,7 +3325,7 @@ namespace NLGUI
 		result = url;
 		string tmp;
 
-		if (toLowerAscii(result).find("file:") == 0 && result.size() > 5)
+		if (toLower(result).find("file:") == 0 && result.size() > 5)
 		{
 			result = result.substr(5, result.size()-5);
 		}
@@ -3455,7 +3346,7 @@ namespace NLGUI
 		{
 			// Normalize the path
 			if (isUrl)
-				//result = "file:"+toLowerAscii(CPath::standardizePath (CPath::getFullPath (CFile::getPath(result)))+CFile::getFilename(result));*/
+				//result = "file:"+toLower(CPath::standardizePath (CPath::getFullPath (CFile::getPath(result)))+CFile::getFilename(result));*/
 				result = "file:/"+tmp;
 			else
 				result = tmp;
@@ -3516,7 +3407,6 @@ namespace NLGUI
 			CViewBitmap *bitmap = dynamic_cast<CViewBitmap*> (view);
 			if (bitmap)
 			{
-				// TODO: background color should have separate bitmap from background texture
 				// Change the background color
 				bitmap->setColor (bgcolor);
 				bitmap->setModulateGlobalColor(false);
@@ -3539,7 +3429,6 @@ namespace NLGUI
 				bitmap->setPosRef(Hotspot_TL);
 				bitmap->setX(0);
 				bitmap->setY(0);
-				// FIXME: renders behind container background
 				bitmap->setRenderLayer(-2);
 				bitmap->setScale(scale);
 				bitmap->setTile(tile);
@@ -3550,7 +3439,7 @@ namespace NLGUI
 				else
 					bitmap->setSizeRef("");
 
-				addImageDownload(bgtex, view, CStyleParams(), NormalImage, "");
+				addImageDownload(bgtex, view);
 			}
 		}
 	}
@@ -3689,7 +3578,7 @@ namespace NLGUI
 		{
 			// Text area ?
 			bool addEntry = false;
-			string entryData;
+			ucstring entryData;
 			if (form.Entries[i].TextArea)
 			{
 				// Get the edit box view
@@ -3717,7 +3606,7 @@ namespace NLGUI
 			else if (form.Entries[i].ComboBox)
 			{
 				CDBGroupComboBox *cb = form.Entries[i].ComboBox;
-				entryData = form.Entries[i].SelectValues[cb->getSelection()];
+				entryData.fromUtf8(form.Entries[i].SelectValues[cb->getSelection()]);
 				addEntry = true;
 			}
 			else if (form.Entries[i].SelectBox)
@@ -3748,7 +3637,7 @@ namespace NLGUI
 			// Add this entry
 			if (addEntry)
 			{
-				formfields.add(form.Entries[i].Name, entryData);
+				formfields.add(form.Entries[i].Name, CI18N::encodeUTF8(entryData));
 			}
 		}
 
@@ -3780,7 +3669,7 @@ namespace NLGUI
 		updateRefreshButton();
 
 		std::string filename;
-		if (toLowerAscii(uri).find("file:/") == 0)
+		if (toLower(uri).find("file:/") == 0)
 		{
 			filename = uri.substr(6, uri.size() - 6);
 		}
@@ -3850,10 +3739,10 @@ namespace NLGUI
 		}
 
 		// https://
-		if (toLowerAscii(url.substr(0, 8)) == "https://")
+		if (toLower(url.substr(0, 8)) == "https://")
 		{
 			// if supported, use custom SSL context function to load certificates
-			NLWEB::CCurlCertificates::useCertificates(curl);
+			CCurlCertificates::useCertificates(curl);
 		}
 
 		// do not follow redirects, we have own handler
@@ -4171,41 +4060,31 @@ namespace NLGUI
 		}
 		else
 		{
-			// Sanitize downloaded HTML UTF-8 encoding, and render
-			renderHtmlString(CUtfStringView(content).toUtf8(true));
+			renderHtmlString(content);
 		}
 	}
 
 	// ***************************************************************************
 	void CGroupHTML::cssDownloadFinished(const std::string &url, const std::string &local)
 	{
-		for(std::vector<CHtmlParser::StyleLink>::iterator it = _StylesheetQueue.begin();
-				it != _StylesheetQueue.end(); ++it)
+		// remove file from download queue
+		std::vector<std::string>::iterator it = std::find(_StylesheetQueue.begin(), _StylesheetQueue.end(), url);
+		if (it != _StylesheetQueue.end())
 		{
-			if (it->Url == url)
-			{
-				// read downloaded file into HtmlStyles
-				if (CFile::fileExists(local) && it->Index < _HtmlStyles.size())
-				{
-					CIFile in;
-					if (in.open(local))
-					{
-						if (!in.readAll(_HtmlStyles[it->Index]))
-						{
-							nlwarning("Failed to read downloaded css file(%s), url(%s)", local.c_str(), url.c_str());
-						}
-					}
-				}
-
-				_StylesheetQueue.erase(it);
-				break;
-			}
+			_StylesheetQueue.erase(it);
 		}
+
+		if (!CFile::fileExists(local))
+		{
+			return;
+		}
+
+		parseStylesheetFile(local);
 	}
 
 	void CGroupHTML::renderDocument()
 	{
-		if (!Curls.empty() && !_StylesheetQueue.empty())
+		if (!_StylesheetQueue.empty())
 		{
 			// waiting for stylesheets to finish downloading
 			return;
@@ -4217,16 +4096,6 @@ namespace NLGUI
 		// clear previous state and page
 		beginBuild();
 		removeContent();
-
-		// process all <style> and <link rel=stylesheet> elements
-		for(uint i = 0; i < _HtmlStyles.size(); ++i)
-		{
-			if (!_HtmlStyles[i].empty())
-			{
-				_Style.parseStylesheet(_HtmlStyles[i]);
-			}
-		}
-		_HtmlStyles.clear();
 
 		std::list<CHtmlElement>::iterator it = _HtmlDOM.Children.begin();
 		while(it != _HtmlDOM.Children.end())
@@ -4271,8 +4140,6 @@ namespace NLGUI
 			removeContent();
 
 			endBuild();
-
-			success = false;
 		}
 		else
 		{
@@ -4364,7 +4231,7 @@ namespace NLGUI
 
 	// ***************************************************************************
 
-	string	CGroupHTML::home () const
+	string	CGroupHTML::home ()
 	{
 		return Home;
 	}
@@ -4377,7 +4244,6 @@ namespace NLGUI
 		if (!_GroupListAdaptor)
 		{
 			_GroupListAdaptor = new CGroupListAdaptor(CViewBase::TCtorParam()); // deleted by the list
-			_GroupListAdaptor->setId(getList()->getId() + ":GLA");
 			_GroupListAdaptor->setResizeFromChildH(true);
 			getList()->addChild (_GroupListAdaptor, true);
 		}
@@ -4695,7 +4561,9 @@ namespace NLGUI
 		CLuaIHM::checkArgType(ls, funcName, 3, LUA_TBOOLEAN);
 
 		string name = ls.toString(1);
-		string text = ls.toString(2);
+
+		ucstring text;
+		text.fromUtf8(ls.toString(2));
 
 		if (!_Forms.empty())
 		{
@@ -4725,7 +4593,7 @@ namespace NLGUI
 		const char *funcName = "addString";
 		CLuaIHM::checkArgCount(ls, funcName, 1);
 		CLuaIHM::checkArgType(ls, funcName, 1, LUA_TSTRING);
-		addString(ls.toString(1));
+		addString(ucstring(ls.toString(1)));
 		return 0;
 	}
 
@@ -4835,6 +4703,9 @@ namespace NLGUI
 	// ***************************************************************************
 	bool CGroupHTML::parseHtml(const std::string &htmlString)
 	{
+		std::vector<std::string> links;
+		std::string styleString;
+
 		CHtmlElement *parsedDOM;
 		if (_CurrentHTMLElement == NULL)
 		{
@@ -4847,28 +4718,16 @@ namespace NLGUI
 			parsedDOM = _CurrentHTMLElement;
 		}
 
-		std::vector<CHtmlParser::StyleLink> links;
-
 		CHtmlParser parser;
-		parser.getDOM(htmlString, *parsedDOM, _HtmlStyles, links);
+		parser.getDOM(htmlString, *parsedDOM, styleString, links);
 
-		// <link> elements inserted from lua::parseHtml are ignored
-		if (_CurrentHTMLElement == NULL && !links.empty())
+		if (!styleString.empty())
+		{
+			_Style.parseStylesheet(styleString);
+		}
+		if (!links.empty())
 		{
 			addStylesheetDownload(links);
-		}
-		else if (_CurrentHTMLElement != NULL)
-		{
-			// Called from active element (lua)
-			// <style> order is not preserved as document is already being rendered
-			for(uint i = 0; i < _HtmlStyles.size(); ++i)
-			{
-				if (!_HtmlStyles[i].empty())
-				{
-					_Style.parseStylesheet(_HtmlStyles[i]);
-				}
-			}
-			_HtmlStyles.clear();
 		}
 
 		// this should rarely fail as first element should be <html>
@@ -4879,7 +4738,7 @@ namespace NLGUI
 		{
 			if (it->Type == CHtmlElement::ELEMENT_NODE && it->Value == "html")
 			{
-				// move newly parsed childs from <body> into siblings
+				// more newly parsed childs from <body> into siblings
 				if (_CurrentHTMLElement) {
 					std::list<CHtmlElement>::iterator it2 = it->Children.begin();
 					while(it2 != it->Children.end())
@@ -4962,7 +4821,7 @@ namespace NLGUI
 	}
 
 	// ***************************************************************************
-	inline bool isDigit(char c, uint base = 16)
+	inline bool isDigit(ucchar c, uint base = 16)
 	{
 		if (c>='0' && c<='9') return true;
 		if (base != 16) return false;
@@ -4972,7 +4831,7 @@ namespace NLGUI
 	}
 
 	// ***************************************************************************
-	inline char convertHexDigit(char c)
+	inline ucchar convertHexDigit(ucchar c)
 	{
 		if (c>='0' && c<='9') return c-'0';
 		if (c>='A' && c<='F') return c-'A'+10;
@@ -4981,10 +4840,9 @@ namespace NLGUI
 	}
 
 	// ***************************************************************************
-	std::string CGroupHTML::decodeHTMLEntities(const std::string &str)
+	ucstring CGroupHTML::decodeHTMLEntities(const ucstring &str)
 	{
-		std::string result;
-		result.reserve(str.size() + (str.size() >> 2));
+		ucstring result;
 		uint last, pos;
 
 		for (uint i=0; i<str.length(); ++i)
@@ -5020,13 +4878,13 @@ namespace NLGUI
 						continue;
 					}
 
-					u32char c = 0;
+					ucchar c = 0;
 
 					// convert digits to unicode character
-					while (pos < last) c = convertHexDigit(str[pos++]) + (c * u32char(base));
+					while (pos<last) c = convertHexDigit(str[pos++]) + c*ucchar(base);
 
 					// append our new character to the result string
-					CUtfStringView::append(result, c);
+					result += c;
 
 					// move 'i' forward to point at the ';' .. the for(...) will increment i to point to next char
 					i = last;
@@ -5035,10 +4893,10 @@ namespace NLGUI
 				}
 
 				// special xml characters
-				if (str.substr(i+1,5)=="quot;")	{ i+=5; result+='\"'; continue; }
-				if (str.substr(i+1,4)=="amp;")	{ i+=4; result+='&'; continue; }
-				if (str.substr(i+1,3)=="lt;")	{ i+=3; result+='<'; continue; }
-				if (str.substr(i+1,3)=="gt;")	{ i+=3; result+='>'; continue; }
+				if (str.substr(i+1,5)==ucstring("quot;"))	{ i+=5; result+='\"'; continue; }
+				if (str.substr(i+1,4)==ucstring("amp;"))	{ i+=4; result+='&'; continue; }
+				if (str.substr(i+1,3)==ucstring("lt;"))	{ i+=3; result+='<'; continue; }
+				if (str.substr(i+1,3)==ucstring("gt;"))	{ i+=3; result+='>'; continue; }
 			}
 
 			// all the special cases are catered for... treat this as a normal character
@@ -5066,7 +4924,49 @@ namespace NLGUI
 		_WaitingForStylesheet = false;
 		_StylesheetQueue.clear();
 		_Style.reset();
-		_Style = _BrowserStyle;
+
+		std::string css;
+
+		// TODO: browser css
+		css += "html { background-color: " + getRGBAString(BgColor) + "; color: " + getRGBAString(TextColor) + "; font-size: " + toString(TextFontSize) + "px;}";
+		css += "a { color: " + getRGBAString(LinkColor) + "; text-decoration: underline; -ryzom-modulate-color: "+toString(LinkColorGlobalColor)+";}";
+		css += "h1 { color: " + getRGBAString(H1Color) + "; font-size: "+ toString("%d", H1FontSize) + "px; -ryzom-modulate-color: "+toString(H1ColorGlobalColor)+";}";
+		css += "h2 { color: " + getRGBAString(H2Color) + "; font-size: "+ toString("%d", H2FontSize) + "px; -ryzom-modulate-color: "+toString(H2ColorGlobalColor)+";}";
+		css += "h3 { color: " + getRGBAString(H3Color) + "; font-size: "+ toString("%d", H3FontSize) + "px; -ryzom-modulate-color: "+toString(H3ColorGlobalColor)+";}";
+		css += "h4 { color: " + getRGBAString(H4Color) + "; font-size: "+ toString("%d", H4FontSize) + "px; -ryzom-modulate-color: "+toString(H4ColorGlobalColor)+";}";
+		css += "h5 { color: " + getRGBAString(H5Color) + "; font-size: "+ toString("%d", H5FontSize) + "px; -ryzom-modulate-color: "+toString(H5ColorGlobalColor)+";}";
+		css += "h6 { color: " + getRGBAString(H6Color) + "; font-size: "+ toString("%d", H6FontSize) + "px; -ryzom-modulate-color: "+toString(H6ColorGlobalColor)+";}";
+		css += "input[type=\"text\"] { color: " + getRGBAString(TextColor) + "; font-size: " + toString("%d", TextFontSize) + "px; font-weight: normal; text-shadow: 1px 1px #000;}";
+		css += "pre { font-family: monospace;}";
+		// th { text-align: center; } - overwrites align property
+		css += "th { font-weight: bold; }";
+		css += "textarea { color: " + getRGBAString(TextColor) + "; font-weight: normal; font-size: " + toString("%d", TextFontSize) + "px; text-shadow: 1px 1px #000;}";
+		css += "del { text-decoration: line-through;}";
+		css += "u { text-decoration: underline;}";
+		css += "em { font-style: italic; }";
+		css += "strong { font-weight: bold; }";
+		css += "small { font-size: smaller;}";
+		css += "dt { font-weight: bold; }";
+		css += "hr { color: rgb(120, 120, 120);}";
+		// block level elements
+		css += "address, article, aside, blockquote, details, dialog, dd, div, dl, dt, fieldset, figcaption, figure,";
+		css += "footer, form, h1, h2, h3, h4, h5, h6, header, hgroup, hr, li, main, nav, ol, p, pre, section, table,";
+		css += "ul { display: block; }";
+		css += "table { display: table; }";
+		// td { padding: 1px;} - overwrites cellpadding attribute
+		// table { border-spacing: 2px;} - overwrites cellspacing attribute
+		css += "table { border-collapse: separate;}";
+		// webkit pseudo elements
+		css += "meter::-webkit-meter-bar, meter::-webkit-optimum-value, meter::-webkit-suboptimum-value, meter::-webkit-even-less-good-value { background: none; }";
+		css += "meter::-webkit-meter-bar { background-color: rgb(100, 100, 100); width: 5em; height: 1em;}";
+		css += "meter::-webkit-meter-optimum-value { background-color: rgb(80, 220, 80); }";
+		css += "meter::-webkit-meter-suboptimum-value { background-color: rgb(220, 220, 80); }";
+		css += "meter::-webkit-meter-even-less-good-value { background-color: rgb(220, 80, 80); }";
+		// webkit pseudo elements
+		css += "progress::-webkit-progress-bar, progress::-webkit-progress-value { background: none; }";
+		css += "progress::-webkit-progress-bar { background-color: rgb(230, 230, 230); width: 10em; height: 1em; }";
+		css += "progress::-webkit-progress-value { background-color: rgb(0, 100, 180);}";
+		_Style.parseStylesheet(css);
 	}
 
 	// ***************************************************************************
@@ -5197,7 +5097,7 @@ namespace NLGUI
 		if (low < min)
 			low = min;
 		if (high > max)
-			high = max;
+			max = max;
 	}
 
 	float CGroupHTML::HTMLMeterElement::getValueRatio() const
@@ -5345,7 +5245,9 @@ namespace NLGUI
 	{
 		CGroupHTML::CCellParams cellParams;
 		if (!_CellParams.empty() && inherit)
+		{
 			cellParams = _CellParams.back();
+		}
 
 		if (_Style.hasStyle("background-color"))
 			cellParams.BgColor = _Style.Current.BackgroundColor;
@@ -5358,18 +5260,13 @@ namespace NLGUI
 		if (elm.hasNonEmptyAttribute("l_margin"))
 			fromString(elm.getAttribute("l_margin"), cellParams.LeftMargin);
 
-		if (_Style.hasStyle("height"))
-			cellParams.Height = _Style.Current.Height;
-		else if (elm.hasNonEmptyAttribute("height"))
-			fromString(elm.getAttribute("height"), cellParams.Height);
-
 		{
 			std::string align;
 			// having text-align on table/tr should not override td align attribute
 			if (_Style.hasStyle("text-align"))
 				align = _Style.Current.TextAlign;
 			else if (elm.hasNonEmptyAttribute("align"))
-				align = toLowerAscii(elm.getAttribute("align"));
+				align = toLower(elm.getAttribute("align"));
 
 			if (align == "left")
 				cellParams.Align = CGroupCell::Left;
@@ -5384,7 +5281,7 @@ namespace NLGUI
 			if (_Style.hasStyle("vertical-align"))
 				valign = _Style.Current.VerticalAlign;
 			else if (elm.hasNonEmptyAttribute("valign"))
-				valign = toLowerAscii(elm.getAttribute("valign"));
+				valign = toLower(elm.getAttribute("valign"));
 
 			if (valign == "top")
 				cellParams.VAlign = CGroupCell::Top;
@@ -5440,7 +5337,7 @@ namespace NLGUI
 	// ***************************************************************************
 	void CGroupHTML::insertFormImageButton(const std::string &name, const std::string &tooltip, const std::string &src, const std::string &over, const std::string &formId, const std::string &action, uint32 minWidth, const std::string &templateName)
 	{
-		_FormSubmit.push_back(SFormSubmitButton(formId, name, "", "image", action));
+		_FormSubmit.push_back(SFormSubmitButton(formId, name, "", "image"));
 		// Action handler parameters
 		std::string param = "name=" + getId() + "|button=" + toString(_FormSubmit.size()-1);
 
@@ -5451,7 +5348,7 @@ namespace NLGUI
 	// ***************************************************************************
 	void CGroupHTML::insertFormTextButton(const std::string &name, const std::string &tooltip, const std::string &value, const std::string &formId, const std::string &formAction, uint32 minWidth, const std::string &templateName)
 	{
-		_FormSubmit.push_back(SFormSubmitButton(formId, name, value, "submit", formAction));
+		_FormSubmit.push_back(SFormSubmitButton(formId, name, value, "submit"));
 		// Action handler parameters
 		string param = "name=" + getId() + "|button=" + toString(_FormSubmit.size()-1);
 
@@ -5489,11 +5386,11 @@ namespace NLGUI
 					}
 					else
 					{
-						ctrlButton->setDefaultContextHelp(tooltip);
+						ctrlButton->setDefaultContextHelp(ucstring(tooltip));
 					}
 				}
 
-				ctrlButton->setText(value);
+				ctrlButton->setText(ucstring::makeFromUtf8(value));
 
 				setTextButtonStyle(ctrlButton, _Style.Current);
 			}
@@ -5581,7 +5478,8 @@ namespace NLGUI
 	{
 		if (!_Paragraph || _Paragraph->getNumChildren() == 0)
 		{
-			addString("\n");
+			ucstring tmp("\n");
+			addString(tmp);
 		}
 		else
 		{
@@ -5598,11 +5496,6 @@ namespace NLGUI
 		std::string formAction = elm.getAttribute("formaction");
 		std::string tooltip = elm.getAttribute("tooltip");
 		bool disabled = elm.hasAttribute("disabled");
-
-		if (formId.empty() && _FormOpen)
-		{
-			formId = _Forms.back().id;
-		}
 
 		if (!formAction.empty())
 		{
@@ -5706,8 +5599,6 @@ namespace NLGUI
 		{
 			string style = elm.getAttribute("style");
 			string id = elm.getAttribute("id");
-			if (id.empty())
-				id = "DIV" + toString(getNextAutoIdSeq());
 
 			typedef pair<string, string> TTmplParam;
 			vector<TTmplParam> tmplParams;
@@ -5740,10 +5631,10 @@ namespace NLGUI
 					parentId = _Paragraph->getId();
 				}
 
-				CInterfaceGroup *inst = CWidgetManager::getInstance()->getParser()->createGroupInstance(templateName, parentId, tmplParams);
+				CInterfaceGroup *inst = CWidgetManager::getInstance()->getParser()->createGroupInstance(templateName, this->_Id+":"+id, tmplParams);
 				if (inst)
 				{
-					inst->setId(parentId+":"+id);
+					inst->setId(this->_Id+":"+id);
 					inst->updateCoords();
 					if (haveParentDiv)
 					{
@@ -5876,12 +5767,10 @@ namespace NLGUI
 	// ***************************************************************************
 	void CGroupHTML::htmlFORM(const CHtmlElement &elm)
 	{
-		_FormOpen = true;
-
 		// Build the form
 		CGroupHTML::CForm form;
 		// id check is case sensitive and auto id's are uppercase
-		form.id = toLowerAscii(trim(elm.getAttribute("id")));
+		form.id = toLower(trim(elm.getAttribute("id")));
 		if (form.id.empty())
 		{
 			form.id = toString("FORM%d", _Forms.size());
@@ -5900,12 +5789,6 @@ namespace NLGUI
 		_Forms.push_back(form);
 
 		renderPseudoElement(":before", elm);
-	}
-
-	void CGroupHTML::htmlFORMend(const CHtmlElement &elm)
-	{
-		_FormOpen = false;
-		renderPseudoElement(":after", elm);
 	}
 
 	// ***************************************************************************
@@ -6088,48 +5971,34 @@ namespace NLGUI
 			string name = elm.getAttribute("name");
 			string src = elm.getAttribute("src");
 			string over = elm.getAttribute("data-over-src");
-			string formId = elm.getAttribute("form");
-			string formAction = elm.getAttribute("formaction");
 
-			if (formId.empty() && _FormOpen) {
-				formId = _Forms.back().id;
-			}
-
-			insertFormImageButton(name, tooltip, src, over, formId, formAction, minWidth, templateName);
+			insertFormImageButton(name, tooltip, src, over, _Forms.back().id, "", minWidth, templateName);
 		}
 		else if (type == "button" || type == "submit")
 		{
+			// The submit button
 			string name = elm.getAttribute("name");
 			string value = elm.getAttribute("value");
-			string formId = elm.getAttribute("form");
-			string formAction = elm.getAttribute("formaction");
 
-			if (formId.empty() && _FormOpen) {
-				formId = _Forms.back().id;
-			}
-
-			insertFormTextButton(name, tooltip, value, formId, formAction, minWidth, templateName);
+			insertFormTextButton(name, tooltip, value, _Forms.back().id, "", minWidth, templateName);
 		}
 		else if (type == "text")
 		{
 			// Get the string name
 			string name = elm.getAttribute("name");
-			string ucValue = elm.getAttribute("value");
+			ucstring ucValue;
+			ucValue.fromUtf8(elm.getAttribute("value"));
 
-			uint size = 20;
+			uint size = 120;
 			uint maxlength = 1024;
 			if (elm.hasNonEmptyAttribute("size"))
 				fromString(elm.getAttribute("size"), size);
 			if (elm.hasNonEmptyAttribute("maxlength"))
 				fromString(elm.getAttribute("maxlength"), maxlength);
 
-			// ryzom client used to have 'size' attribute in pixels, (12 == was default font size)
-			if (_Style.hasStyle("-ryzom-input-size-px") && _Style.getStyle("-ryzom-input-size-px") == "true")
-				size = size / 12;
-
 			string textTemplate(!templateName.empty() ? templateName : DefaultFormTextGroup);
 			// Add the editbox
-			CInterfaceGroup *textArea = addTextArea (textTemplate, name.c_str (), 1, size, false, ucValue, maxlength);
+			CInterfaceGroup *textArea = addTextArea (textTemplate, name.c_str (), 1, size/12, false, ucValue, maxlength);
 			if (textArea)
 			{
 				// Add the text area to the form
@@ -6148,12 +6017,12 @@ namespace NLGUI
 			string normal = elm.getAttribute("src");
 			string pushed;
 			string over;
-			string ucValue = "on";
+			ucstring ucValue = ucstring("on");
 			bool checked = elm.hasAttribute("checked");
 
 			// TODO: unknown if empty attribute should override or not
 			if (elm.hasNonEmptyAttribute("value"))
-				ucValue = elm.getAttribute("value");
+				ucValue.fromUtf8(elm.getAttribute("value"));
 
 			if (type == "radio")
 			{
@@ -6218,7 +6087,8 @@ namespace NLGUI
 				string name = elm.getAttribute("name");
 
 				// Get the value
-				string ucValue = elm.getAttribute("value");
+				ucstring ucValue;
+				ucValue.fromUtf8(elm.getAttribute("value"));
 
 				// Add an entry
 				CGroupHTML::CForm::CEntry entry;
@@ -6250,7 +6120,8 @@ namespace NLGUI
 		if (elm.hasNonEmptyAttribute("value"))
 			fromString(elm.getAttribute("value"), _UL.back().Value);
 
-		string str = _UL.back().getListMarkerText();
+		ucstring str;
+		str.fromUtf8(_UL.back().getListMarkerText());
 		addString (str);
 
 		// list-style-type: outside
@@ -6320,7 +6191,7 @@ namespace NLGUI
 			{
 				fromString(httpContent.substr(0, pos), _NextRefreshTime);
 
-				pos = toLowerAscii(httpContent).find("url=");
+				pos = toLower(httpContent).find("url=");
 				if (pos != string::npos)
 					_RefreshUrl = getAbsoluteUrl(httpContent.substr(pos + 4));
 			}
@@ -6342,8 +6213,7 @@ namespace NLGUI
 		// width: 5em, height: 1em
 		uint32 width = _Style.Current.Width > -1 ? _Style.Current.Width : _Style.Current.FontSize * 5;
 		uint32 height = _Style.Current.Height > -1 ? _Style.Current.Height : _Style.Current.FontSize;
-		// FIXME: only using border-top
-		uint32 border = _Style.Current.BorderTopWidth > -1 ? _Style.Current.BorderTopWidth : 0;
+		uint32 border = _Style.Current.BorderWidth > -1 ? _Style.Current.BorderWidth : 0;
 
 		uint barw = (uint) (width * meter.getValueRatio());
 		CRGBA bgColor = meter.getBarColor(elm, _Style);
@@ -6450,12 +6320,6 @@ namespace NLGUI
 	{
 		if (_Forms.empty() || _Forms.back().Entries.empty())
 			return;
-
-		// use option text as value
-		if (!elm.hasAttribute("value"))
-		{
-			_Forms.back().Entries.back().SelectValues.back() = _SelectOptionStr;
-		}
 
 		// insert the parsed text into the select control
 		CDBGroupComboBox *cb = _Forms.back().Entries.back().ComboBox;
@@ -6564,8 +6428,7 @@ namespace NLGUI
 		// width: 10em, height: 1em
 		uint32 width = _Style.Current.Width > -1 ? _Style.Current.Width : _Style.Current.FontSize * 10;
 		uint32 height = _Style.Current.Height > -1 ? _Style.Current.Height : _Style.Current.FontSize;
-		// FIXME: only using border-top
-		uint32 border = _Style.Current.BorderTopWidth > -1 ? _Style.Current.BorderTopWidth : 0;
+		uint32 border = _Style.Current.BorderWidth > -1 ? _Style.Current.BorderWidth : 0;
 
 		uint barw = (uint) (width * progress.getValueRatio());
 		CRGBA bgColor = progress.getBarColor(elm, _Style);
@@ -6640,7 +6503,7 @@ namespace NLGUI
 					sb->setMinH(_Style.Current.Height);
 
 				sb->setMaxVisibleLine(size);
-				sb->setFontSize(_Style.Current.FontSize, false);
+				sb->setFontSize(_Style.Current.FontSize);
 			}
 
 			entry.SelectBox = sb;
@@ -6694,10 +6557,6 @@ namespace NLGUI
 
 		CGroupTable *table = new CGroupTable(TCtorParam());
 		table->BgColor = _CellParams.back().BgColor;
-		if (elm.hasNonEmptyAttribute("id"))
-			table->setId(getCurrentGroup()->getId() + ":" + elm.getAttribute("id"));
-		else
-			table->setId(getCurrentGroup()->getId() + ":TABLE" + toString(getNextAutoIdSeq()));
 
 		// TODO: border-spacing: 2em;
 		{
@@ -6717,82 +6576,36 @@ namespace NLGUI
 			fromString(elm.getAttribute("cellpadding"), table->CellPadding);
 
 		if (_Style.hasStyle("width"))
-		{
-			// _Style.Width does not handle '%' unit currently
-			if (_Style.Current.Width > 0)
-			{
-				table->ForceWidthMin = _Style.Current.Width;
-				table->TableRatio = 0;
-			}
-			else
-			{
-				getPercentage (table->ForceWidthMin, table->TableRatio, _Style.getStyle("width").c_str());
-			}
-		}
+			getPercentage(table->ForceWidthMin, table->TableRatio, _Style.getStyle("width").c_str());
 		else if (elm.hasNonEmptyAttribute("width"))
-		{
 			getPercentage (table->ForceWidthMin, table->TableRatio, elm.getAttribute("width").c_str());
-		}
 
-		// border from css or from attribute
+		if (_Style.hasStyle("border") || _Style.hasStyle("border-width"))
 		{
-			uint32 borderWidth = 0;
-			CRGBA borderColor = CRGBA::Transparent;
-
-			if (elm.hasAttribute("border"))
-			{
-				std::string s = elm.getAttribute("border");
-				if (s.empty())
-					borderWidth = 1;
-				else
-					fromString(elm.getAttribute("border"), borderWidth);
-
-				if (elm.hasNonEmptyAttribute("bordercolor"))
-					scanHTMLColor(elm.getAttribute("bordercolor").c_str(), borderColor);
-				else
-					borderColor = CRGBA(128, 128, 128, 255);
-
-				table->CellBorder = (borderWidth > 0);
-				table->Border->setWidth(borderWidth, borderWidth, borderWidth, borderWidth);
-				table->Border->setColor(borderColor, borderColor, borderColor, borderColor);
-				table->Border->setStyle(CSS_LINE_STYLE_OUTSET, CSS_LINE_STYLE_OUTSET, CSS_LINE_STYLE_OUTSET, CSS_LINE_STYLE_OUTSET);
-			}
+			table->Border = _Style.Current.BorderWidth;
+		}
+		else if (elm.hasAttribute("border"))
+		{
+			std::string s = elm.getAttribute("border");
+			if (s.empty())
+				table->Border = 1;
 			else
-			{
-				table->CellBorder = false;
-			}
-
-			if (_Style.hasStyle("border-top-width"))	table->Border->TopWidth = _Style.Current.BorderTopWidth;
-			if (_Style.hasStyle("border-right-width"))	table->Border->RightWidth = _Style.Current.BorderRightWidth;
-			if (_Style.hasStyle("border-bottom-width"))	table->Border->BottomWidth = _Style.Current.BorderBottomWidth;
-			if (_Style.hasStyle("border-left-width"))	table->Border->LeftWidth = _Style.Current.BorderLeftWidth;
-
-			if (_Style.hasStyle("border-top-color"))	table->Border->TopColor = _Style.Current.BorderTopColor;
-			if (_Style.hasStyle("border-right-color"))	table->Border->RightColor = _Style.Current.BorderRightColor;
-			if (_Style.hasStyle("border-bottom-color"))	table->Border->BottomColor = _Style.Current.BorderBottomColor;
-			if (_Style.hasStyle("border-left-color"))	table->Border->LeftColor = _Style.Current.BorderLeftColor;
-
-			if (_Style.hasStyle("border-top-style"))	table->Border->TopStyle = _Style.Current.BorderTopStyle;
-			if (_Style.hasStyle("border-right-style"))	table->Border->RightStyle = _Style.Current.BorderRightStyle;
-			if (_Style.hasStyle("border-bottom-style"))	table->Border->BottomStyle = _Style.Current.BorderBottomStyle;
-			if (_Style.hasStyle("border-left-style"))	table->Border->LeftStyle = _Style.Current.BorderLeftStyle;
+				fromString(elm.getAttribute("border"), table->Border);
 		}
 
-		if (_Style.hasStyle("background-image"))
+		if (_Style.hasStyle("border-color"))
 		{
-			if (_Style.checkStyle("background-repeat", "repeat"))
-				table->setTextureTile(true);
-
-			if (_Style.checkStyle("background-size", "100%"))
-				table->setTextureScale(true);
-
-			string image = _Style.getStyle("background-image");
-			addImageDownload(image, table, CStyleParams(), NormalImage, "");
+			std::string s = toLower(_Style.getStyle("border-color"));
+			if (s == "currentcolor")
+				table->BorderColor = _Style.Current.TextColor;
+			else
+				scanHTMLColor(s.c_str(), table->BorderColor);
+		}
+		else if (elm.hasNonEmptyAttribute("bordercolor"))
+		{
+			scanHTMLColor(elm.getAttribute("bordercolor").c_str(), table->BorderColor);
 		}
 
-		// setting ModulateGlobalColor must be after addImageDownload
-		if (_Style.checkStyle("-ryzom-modulate-bgcolor", "true"))
-			table->setModulateGlobalColor(true);
 		table->setMarginLeft(getIndent());
 		addHtmlGroup (table, 0);
 
@@ -6820,20 +6633,8 @@ namespace NLGUI
 	// ***************************************************************************
 	void CGroupHTML::htmlTD(const CHtmlElement &elm)
 	{
-		CRGBA rowColor = CRGBA::Transparent;
-		// remember row color so we can blend it with cell color
-		if (!_CellParams.empty())
-			rowColor = _CellParams.back().BgColor;
-
 		// Get cells parameters
 		getCellsParameters(elm, true);
-
-		// if cell has own background,then it must be blended with row
-		if (rowColor.A > 0 && (elm.hasNonEmptyAttribute("bgcolor") || _Style.hasStyle("background-color")))
-		{
-			if (_CellParams.back().BgColor.A < 255)
-				_CellParams.back().BgColor.blendFromui(rowColor, _CellParams.back().BgColor, _CellParams.back().BgColor.A);
-		}
 
 		if (elm.ID == HTML_TH)
 		{
@@ -6857,13 +6658,15 @@ namespace NLGUI
 			return;
 		}
 
+		if (_Style.hasStyle("padding"))
+		{
+			uint32 a;
+			// TODO: cssLength
+			if (fromString(_Style.getStyle("padding"), a))
+				table->CellPadding = a;
+		}
+
 		_Cells.back() = new CGroupCell(CViewBase::TCtorParam());
-		if (elm.hasNonEmptyAttribute("id"))
-			_Cells.back()->setId(table->getId() + ":" + elm.getAttribute("id"));
-		else
-			_Cells.back()->setId(table->getId() + ":TD" + toString(getNextAutoIdSeq()));
-		// inner cell content
-		_Cells.back()->Group->setId(_Cells.back()->getId() + ":CELL");
 
 		if (_Style.checkStyle("background-repeat", "repeat"))
 			_Cells.back()->setTextureTile(true);
@@ -6874,7 +6677,7 @@ namespace NLGUI
 		if (_Style.hasStyle("background-image"))
 		{
 			string image = _Style.getStyle("background-image");
-			addImageDownload(image, _Cells.back(), CStyleParams(), NormalImage, "");
+			addImageDownload(image, _Cells.back());
 		}
 
 		if (elm.hasNonEmptyAttribute("colspan"))
@@ -6889,70 +6692,19 @@ namespace NLGUI
 		_Cells.back()->NoWrap = _CellParams.back().NoWrap;
 		_Cells.back()->ColSpan = std::max(1, _Cells.back()->ColSpan);
 		_Cells.back()->RowSpan = std::max(1, _Cells.back()->RowSpan);
-		_Cells.back()->Height = _CellParams.back().Height;
 
 		float temp;
 		if (_Style.hasStyle("width"))
-		{
-			// _Style.Width does not handle '%' unit currently
-			if (_Style.Current.Width > 0)
-			{
-				_Cells.back()->WidthWanted = _Style.Current.Width;
-				_Cells.back()->TableRatio = 0;
-			}
-			else
-			{
-				getPercentage (_Cells.back()->WidthWanted, _Cells.back()->TableRatio, _Style.getStyle("width").c_str());
-			}
-		}
+			getPercentage (_Cells.back()->WidthWanted, _Cells.back()->TableRatio, _Style.getStyle("width").c_str());
 		else if (elm.hasNonEmptyAttribute("width"))
-		{
 			getPercentage (_Cells.back()->WidthWanted, _Cells.back()->TableRatio, elm.getAttribute("width").c_str());
-		}
+
+		if (_Style.hasStyle("height"))
+			getPercentage (_Cells.back()->Height, temp, _Style.getStyle("height").c_str());
+		else if (elm.hasNonEmptyAttribute("height"))
+			getPercentage (_Cells.back()->Height, temp, elm.getAttribute("height").c_str());
 
 		_Cells.back()->NewLine = getTR();
-
-		// setting ModulateGlobalColor must be after addImageDownload
-		if (_Style.checkStyle("-ryzom-modulate-bgcolor", "true"))
-			_Cells.back()->setModulateGlobalColor(true);
-
-		// border from <table border="1">
-		if (table->CellBorder)
-		{
-			_Cells.back()->Border->setWidth(1, 1, 1, 1);
-			_Cells.back()->Border->setColor(table->Border->TopColor, table->Border->RightColor, table->Border->BottomColor, table->Border->LeftColor);
-			_Cells.back()->Border->setStyle(CSS_LINE_STYLE_INSET, CSS_LINE_STYLE_INSET, CSS_LINE_STYLE_INSET, CSS_LINE_STYLE_INSET);
-		}
-
-		if (_Style.hasStyle("border-top-width"))	_Cells.back()->Border->TopWidth = _Style.Current.BorderTopWidth;
-		if (_Style.hasStyle("border-right-width"))	_Cells.back()->Border->RightWidth = _Style.Current.BorderRightWidth;
-		if (_Style.hasStyle("border-bottom-width"))	_Cells.back()->Border->BottomWidth = _Style.Current.BorderBottomWidth;
-		if (_Style.hasStyle("border-left-width"))	_Cells.back()->Border->LeftWidth = _Style.Current.BorderLeftWidth;
-
-		if (_Style.hasStyle("border-top-color"))	_Cells.back()->Border->TopColor = _Style.Current.BorderTopColor;
-		if (_Style.hasStyle("border-right-color"))	_Cells.back()->Border->RightColor = _Style.Current.BorderRightColor;
-		if (_Style.hasStyle("border-bottom-color"))	_Cells.back()->Border->BottomColor = _Style.Current.BorderBottomColor;
-		if (_Style.hasStyle("border-left-color"))	_Cells.back()->Border->LeftColor = _Style.Current.BorderLeftColor;
-
-		if (_Style.hasStyle("border-top-style"))	_Cells.back()->Border->TopStyle = _Style.Current.BorderTopStyle;
-		if (_Style.hasStyle("border-right-style"))	_Cells.back()->Border->RightStyle = _Style.Current.BorderRightStyle;
-		if (_Style.hasStyle("border-bottom-style"))	_Cells.back()->Border->BottomStyle = _Style.Current.BorderBottomStyle;
-		if (_Style.hasStyle("border-left-style"))	_Cells.back()->Border->LeftStyle = _Style.Current.BorderLeftStyle;
-
-		// padding from <table cellpadding="1">
-		if (table->CellPadding)
-		{
-			_Cells.back()->PaddingTop = table->CellPadding;
-			_Cells.back()->PaddingRight = table->CellPadding;
-			_Cells.back()->PaddingBottom = table->CellPadding;
-			_Cells.back()->PaddingLeft = table->CellPadding;
-		}
-
-		if (_Style.hasStyle("padding-top"))    _Cells.back()->PaddingTop    = _Style.Current.PaddingTop;
-		if (_Style.hasStyle("padding-right"))  _Cells.back()->PaddingRight  = _Style.Current.PaddingRight;
-		if (_Style.hasStyle("padding-bottom")) _Cells.back()->PaddingBottom = _Style.Current.PaddingBottom;
-		if (_Style.hasStyle("padding-left"))   _Cells.back()->PaddingLeft   = _Style.Current.PaddingLeft;
-
 		table->addChild (_Cells.back());
 
 		// reusing indent pushed by table
@@ -7061,13 +6813,6 @@ namespace NLGUI
 	// ***************************************************************************
 	void CGroupHTML::htmlTR(const CHtmlElement &elm)
 	{
-		// prevent inheriting from table
-		if (!_CellParams.empty())
-		{
-			_CellParams.back().BgColor = CRGBA::Transparent;
-			_CellParams.back().Height = 0;
-		}
-
 		// Get cells parameters
 		getCellsParameters(elm, true);
 

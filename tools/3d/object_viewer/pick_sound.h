@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -26,7 +23,7 @@
 #endif // _MSC_VER > 1000
 // pick_sound.h : header file
 //
-#include "nel/misc/string_mapper.h"
+#include "nel/misc/sheet_id.h"
 #include <vector>
 #include <string>
 
@@ -43,11 +40,11 @@ class CPickSound : public CDialog
 {
 // Construction
 public:
-	typedef std::vector<NLMISC::TStringId> TNameVect;
+	typedef std::vector<NLMISC::CSheetId> TNameVect;
 	CPickSound(const TNameVect &names, CWnd* pParent = NULL);   // standard constructor
 
 
-	const NLMISC::TStringId &getName(void) const { return _CurrName; }
+	const NLMISC::CSheetId &getName(void) const { return _CurrName; }
 
 // Dialog Data
 	//{{AFX_DATA(CPickSound)
@@ -66,7 +63,7 @@ public:
 // Implementation
 protected:
 	TNameVect			_Names;
-	NLMISC::TStringId	_CurrName;
+	NLMISC::CSheetId	_CurrName;
 
 	UINT_PTR _Timer;
 

@@ -1,9 +1,5 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
-// Copyright (C) 2010-2018  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -249,14 +245,12 @@ namespace NLGUI
 		// Get the header color draw. NB: depends if grayed, and if active.
 		NLMISC::CRGBA	getDrawnHeaderColor () const;
 
-#ifdef RYZOM_LUA_UCSTRING
-		ucstring		getUCTitleOpened () const; // Compatibility
-		void			setUCTitleOpened (const ucstring &title); // Compatibility
-		ucstring		getUCTitleClosed () const; // Compatibility
-		void			setUCTitleClosed (const ucstring &title); // Compatibility
-		ucstring		getUCTitle () const; // Compatibility
-		void			setUCTitle (const ucstring &title); // Compatibility
-#endif
+		ucstring		getUCTitleOpened () const;
+		void			setUCTitleOpened (const ucstring &title);
+		ucstring		getUCTitleClosed () const;
+		void			setUCTitleClosed (const ucstring &title);
+		ucstring		getUCTitle () const;
+		void			setUCTitle (const ucstring &title);
 
 		void			setPopable(bool popable) { _Popable = popable; }
 		bool			isPopable() const { return _Popable; }
@@ -290,13 +284,9 @@ namespace NLGUI
 			REFLECT_STRING("title", getTitle, setTitle);
 			REFLECT_STRING("title_opened", getTitleOpened, setTitleOpened);
 			REFLECT_STRING("title_closed", getTitleClosed, setTitleClosed);
-
-#ifdef RYZOM_LUA_UCSTRING
-			REFLECT_UCSTRING("uc_title_opened", getUCTitleOpened, setUCTitleOpened); // Compatibility
-			REFLECT_UCSTRING("uc_title_closed", getUCTitleClosed, setUCTitleClosed); // Compatibility
-			REFLECT_UCSTRING("uc_title", getUCTitle, setUCTitle); // Compatibility
-#endif
-
+			REFLECT_UCSTRING("uc_title_opened", getUCTitleOpened, setUCTitleOpened);
+			REFLECT_UCSTRING("uc_title_closed", getUCTitleClosed, setUCTitleClosed);
+			REFLECT_UCSTRING("uc_title", getUCTitle, setUCTitle);
 			REFLECT_STRING("title_color", getTitleColorAsString, setTitleColorAsString);
 			REFLECT_SINT32("pop_min_h", getPopupMinH, setPopupMinH);
 			REFLECT_SINT32("pop_max_h", getPopupMaxH, setPopupMaxH);
@@ -308,8 +298,6 @@ namespace NLGUI
 			REFLECT_BOOL("opened", isOpen, setOpen);
 			REFLECT_BOOL("lockable", isLockable, setLockable);
 			REFLECT_BOOL("locked", isLocked, setLocked);
-
-			REFLECT_BOOL("localize", isLocalize, setLocalize);
 
 			REFLECT_BOOL("header_active", getHeaderActive, setHeaderActive);
 			REFLECT_BOOL("right_button_enabled", getRightButtonEnabled, setRightButtonEnabled);
@@ -373,7 +361,7 @@ namespace NLGUI
 		bool             isActiveSavable() const { return _ActiveSavable; }
 
 		bool isLocalize() const { return _Localize; }
-		void setLocalize(bool localize);
+		void setLocalize(bool localize) { _Localize = localize; }
 
 		void setPopupX(sint32 x) { _PopupX = x; }
 		void setPopupY(sint32 y) { _PopupY = y; }
@@ -486,8 +474,8 @@ namespace NLGUI
 		float				_CurrentRolloverAlphaContainer;
 		float				_CurrentRolloverAlphaContent;
 		sint32				_LayerSetup;
-		std::string			_TitleTextOpened;
-		std::string			_TitleTextClosed;
+		ucstring			_TitleTextOpened;
+		ucstring			_TitleTextClosed;
 		CViewText			*_TitleOpened;
 		CViewText			*_TitleClosed;
 		sint32				_TitleDeltaMaxW;
@@ -644,9 +632,6 @@ namespace NLGUI
 		void	removeResizerMaxH();
 
 		TTileClass	convertTitleClass(const char *ptr);
-
-		void setTitledOpenedViewText();
-		void setTitledClosedViewText();
 
 		static COptionsContainerMove *getMoveOptions();
 

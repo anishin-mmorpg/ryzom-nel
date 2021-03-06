@@ -1,10 +1,5 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
-// Copyright (C) 2010-2018  Winch Gate Property Limited
-//
-// This source file has been modified by the following contributors:
-// Copyright (C) 2010  Matt RAYKOWSKI (sfb) <matt.raykowski@gmail.com>
-// Copyright (C) 2010  Robert TIMM (rti) <mail@rtti.de>
-// Copyright (C) 2015-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
+// Copyright (C) 2010  Winch Gate Property Limited
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -227,62 +222,18 @@ inline double	isValidDouble (double v)
  * \param str a string to transform to lower case
  */
 
-std::string toLower ( const char *str ); // UTF-8
-std::string	toLower ( const std::string &str ); // UTF-8
-void		toLower ( char *str ); // Ascii only
+std::string toLower ( const char *str );
+std::string	toLower ( const std::string &str );
+void		toLower ( char *str );
 char		toLower ( const char ch );	// convert only one character
 
 /** Convert a string in upper case.
  * \param a string to transform to upper case
  */
 
-std::string toUpper ( const char *str ); // UTF-8
-std::string	toUpper ( const std::string &str); // UTF-8
-void		toUpper ( char *str); // Ascii only
+std::string	toUpper ( const std::string &str);
+void		toUpper ( char *str);
 
-/** Convert a single character in UTF-8 to upper or lowercase.
-* \param res Character is appended in UTF-8 into this string.
-* \param src Character is sourced from this UTF-8 string.
-* \param i Index in `str`, incremented by the number of bytes read.
-*/
-void appendToLower(std::string &res, const char *str, ptrdiff_t &i);
-void appendToLower(std::string &res, const std::string &str, ptrdiff_t &i);
-void appendToUpper(std::string &res, const char *str, ptrdiff_t &i);
-void appendToUpper(std::string &res, const std::string &str, ptrdiff_t &i);
-void appendToTitle(std::string &res, const char *str, ptrdiff_t &i);
-void appendToTitle(std::string &res, const std::string &str, ptrdiff_t &i);
-
-/** UTF-8 case insensitive compare */
-int compareCaseInsensitive(const char *a, const char *b);
-int compareCaseInsensitive(const char *a, size_t lenA, const char *b, size_t lenB);
-inline int compareCaseInsensitive(const std::string &a, const std::string &b) { return compareCaseInsensitive(&a[0], a.size(), &b[0], b.size()); }
-inline bool ltCaseInsensitive(const std::string &a, const std::string &b) { return compareCaseInsensitive(&a[0], a.size(), &b[0], b.size()) < 0; }
-std::string	toCaseInsensitive(const char *str); // UTF-8, case-insensitive toLower
-std::string	toCaseInsensitive(const std::string &str); // UTF-8, case-insensitive toLower
-
-/** ASCII to lowercase. Useful for internal identifiers.
-* Characters outside of the 7-bit ASCII space, and control characters, are replaced.
-*/
-std::string toLowerAscii(const std::string &str, char replacement);
-void toLowerAscii(char *str, char replacement);
-
-/** ASCII to uppercase. Useful for internal identifiers.
-* Characters outside of the 7-bit ASCII space, and control characters, are replaced.
-*/
-std::string toUpperAscii(const std::string &str, char replacement);
-void toUpperAscii(char *str, char replacement);
-
-/** ASCII to lowercase. Useful for internal identifiers.
-* Characters outside of the 7-bit ASCII space are not affected.
-*/
-std::string toLowerAscii(const std::string &str);
-void toLowerAscii(char *str);
-
-/** ASCII to uppercase. Useful for internal identifiers.
-* Characters outside of the 7-bit ASCII space are not affected.
-*/
-std::string toUpperAscii(const std::string &str);
-void toUpperAscii(char *str);
 
 /**
  *  Convert to an hexadecimal std::string
@@ -351,10 +302,6 @@ template <class T> T trimQuotes (const T &str)
 	return str.substr(1, size - 2);
 }
 
-// encode/decode uri component using %AB hex encoding
-std::string encodeURIComponent(const std::string &in);
-std::string decodeURIComponent(const std::string &in);
-
 //////////////////////////////////////////////////////////////////////////
 // ****  DEPRECATED *****: PLEASE DON'T USE THESE METHODS BUT FUNCTIONS ABOVE toLower() and toUpper()
 //////////////////////////////////////////////////////////////////////////
@@ -412,8 +359,8 @@ public:
 	Exception();
 	Exception(const std::string &reason);
 	Exception(const char *format, ...);
-	virtual ~Exception() NL_OVERRIDE {}
-	virtual const char	*what() const throw() NL_OVERRIDE;
+	virtual ~Exception() throw() {}
+	virtual const char	*what() const throw();
 };
 
 

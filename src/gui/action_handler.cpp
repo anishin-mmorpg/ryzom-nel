@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2014  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -42,8 +38,6 @@ namespace NLGUI
 	// ------------------------------------------------------------------------------------------------
 	CAHManager	*CAHManager::_GlobalInstance = NULL;
 	bool CAHManager::editorMode = false;
-	CAHManager::CDeleter CAHManager::s_Deleter;
-	bool CAHManager::s_Deleted = false;
 	// ------------------------------------------------------------------------------------------------
 
 	// ------------------------------------------------------------------------------------------------
@@ -75,13 +69,13 @@ namespace NLGUI
 	{
 		string allparam = Params;
 		skipBlankAtStart (allparam);
-		string param = toLowerAscii (ParamName);
+		string param = toLower (ParamName);
 		while (!allparam.empty())
 		{
 			std::string::size_type e = allparam.find('=');
 			if (e == std::string::npos || e == 0) break;
 			std::string::size_type p = allparam.find('|');
-			string tmp = NLMISC::toLowerAscii(allparam.substr(0,e));
+			string tmp = NLMISC::toLower(allparam.substr(0,e));
 			skipBlankAtEnd(tmp);
 			if (tmp == param)
 			{
@@ -107,7 +101,7 @@ namespace NLGUI
 			std::string::size_type e = allparam.find('=');
 			if (e == std::string::npos || e == 0) break;
 			std::string::size_type p = allparam.find('|');
-			string tmp = NLMISC::toLowerAscii(allparam.substr(0,e));
+			string tmp = NLMISC::toLower(allparam.substr(0,e));
 			skipBlankAtEnd(tmp);
 
 			string tmp2 = allparam.substr(e+1,p-e-1);
@@ -754,7 +748,9 @@ namespace NLGUI
 	{
 		virtual void execute (CCtrlBase *pCaller, const std::string &params)
 		{
-			if (!CViewRenderer::getInstance()->getDriver()->copyTextToClipboard(params))
+			ucstring s;
+			s.fromUtf8(params);
+			if (!CViewRenderer::getInstance()->getDriver()->copyTextToClipboard(s))
 			{
 				nlwarning("Copy to clipboard failed: '%s'", params.c_str());
 			}

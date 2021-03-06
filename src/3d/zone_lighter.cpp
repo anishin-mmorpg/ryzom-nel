@@ -1,9 +1,6 @@
 // NeL - MMORPG Framework <http://dev.ryzom.com/projects/nel/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013-2019  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -350,7 +347,7 @@ void setCPUMask (IThread *thread, uint process)
 		}
 
 		// Set the CPU mask
-		// thread->setCPUMask (1<<i);
+		thread->setCPUMask (1<<i);
 	}
 }
 
@@ -379,7 +376,7 @@ public:
 	void run()
 	{
 		// Set the CPU mask
-		// setCPUMask (Thread, _Process);
+		setCPUMask (Thread, _Process);
 
 		_ZoneLighter->processCalc (_Process, *_Description);
 		_ZoneLighter->_ProcessExitedMutex.enter();
@@ -624,7 +621,7 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 void NL3D::CRenderZBuffer::run()
 {
 	// Set the CPU mask
-	// setCPUMask (Thread, _Process);
+	setCPUMask (Thread, _Process);
 
 	// Span array
 	CPolygon2D::TRasterVect borders;
@@ -927,7 +924,7 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	// Backup thread mask
 	IThread *currentThread = IThread::getCurrentThread ();
 	uint64 threadMask = currentThread->getCPUMask();
-	// currentThread->setCPUMask (1);
+	currentThread->setCPUMask (1);
 
 	// Calc the ray basis
 	_SunDirection=description.SunDirection;
@@ -1179,47 +1176,40 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 	// Set the thread state
 	_LastPatchComputed.resize (_ProcessCount);
 
-	if (patchCount)
+	// Launch threads
+	uint process;
+	for (process=0; process<_ProcessCount; process++)
 	{
-		// Launch threads
-		uint process;
-		for (process = 0; process < _ProcessCount; process++)
-		{
-			// Last patch
-			uint lastPatch = firstPatch + patchCountByThread;
-			lastPatch %= patchCount;
+		// Last patch
+		uint lastPatch=firstPatch+patchCountByThread;
+		lastPatch %= patchCount;
 
-			// Last patch computed
-			_LastPatchComputed[process] = firstPatch;
+		// Last patch computed
+		_LastPatchComputed[process] = firstPatch;
 
-			// Create a thread
-			CLightRunnable *runnable = new CLightRunnable(process, this, &description);
-			IThread *pThread = IThread::create(runnable);
-			runnable->Thread = pThread;
+		// Create a thread
+		CLightRunnable *runnable = new CLightRunnable (process, this, &description);
+		IThread *pThread=IThread::create (runnable);
+		runnable->Thread = pThread;
 
-			// New first patch
-			firstPatch = lastPatch;
+		// New first patch
+		firstPatch=lastPatch;
 
-			// Launch
-			pThread->start();
-		}
-
-		// Wait for others processes
-		while (_ProcessExited != _ProcessCount)
-		{
-			nlSleep(1000);
-
-			// Call the progress callback
-			progress("Lighting patches", (float)_NumberOfPatchComputed / (float)_PatchInfo.size());
-		}
+		// Launch
+		pThread->start();
 	}
-	else
+
+	// Wait for others processes
+	while (_ProcessExited!=_ProcessCount)
 	{
-		nlwarning("Empty zone");
+		nlSleep (1000);
+
+		// Call the progress callback
+		progress ("Lighting patches", (float)_NumberOfPatchComputed/(float)_PatchInfo.size());
 	}
 
 	// Reset old thread mask
-	// currentThread->setCPUMask (threadMask);
+	currentThread->setCPUMask (threadMask);
 
 	// overflow ?
 	if (_ZBufferOverflow)
@@ -1772,7 +1762,7 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 							alphaTestThreshold));
 					}
 				}
-				else if (iba.getFormat() == CIndexBuffer::Indices16)
+				else
 				{
 					const uint16* triIndex=(const uint16*)iba.getPtr ();
 					uint numTri=primitive.getNumIndexes ()/3;
@@ -1803,10 +1793,6 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 						triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v,
 							alphaTestThreshold));
 					}
-				}
-				else
-				{
-					nlerror("Invalid index buffer format");
 				}
 			}
 		}
@@ -1912,73 +1898,34 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &
 			// Dump triangles
 			CIndexBufferRead iba;
 			primitive.lock (iba);
-			if (iba.getFormat() == CIndexBuffer::Indices32)
+			const uint32* triIndex= (const uint32 *) iba.getPtr ();
+			uint numTri=primitive.getNumIndexes ()/3;
+			uint tri;
+			for (tri=0; tri<numTri; tri++)
 			{
-				const uint32 *triIndex = (const uint32 *)iba.getPtr();
-				uint numTri = primitive.getNumIndexes() / 3;
-				uint tri;
-				for (tri = 0; tri < numTri; tri++)
+				// Vertex
+				CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+				CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+				CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
+
+				// UV
+				float u[3] = { 0.f };
+				float v[3] = { 0.f };
+				for (uint i=0; i<3; i++)
 				{
-					// Vertex
-					CVector v0 = modelMT * (*vba.getVertexCoordPointer(triIndex[tri * 3]));
-					CVector v1 = modelMT * (*vba.getVertexCoordPointer(triIndex[tri * 3 + 1]));
-					CVector v2 = modelMT * (*vba.getVertexCoordPointer(triIndex[tri * 3 + 2]));
-
-					// UV
-					float u[3] = { 0.f };
-					float v[3] = { 0.f };
-					for (uint i = 0; i < 3; i++)
+					// Get UV coordinates
+					float *uv = (float*)vba.getTexCoordPointer (triIndex[tri*3+i], 0);
+					if (uv)
 					{
-						// Get UV coordinates
-						float *uv = (float *)vba.getTexCoordPointer(triIndex[tri * 3 + i], 0);
-						if (uv)
-						{
-							// Copy it
-							u[i] = uv[0];
-							v[i] = uv[1];
-						}
+						// Copy it
+						u[i] = uv[0];
+						v[i] = uv[1];
 					}
-
-					// Make a triangle
-					triangleArray.push_back(CTriangle(NLMISC::CTriangle(v0, v1, v2), doubleSided, texture, clampU, clampV, u, v,
-						alphaTestThreshold));
 				}
-			}
-			else if (iba.getFormat() == CIndexBuffer::Indices16)
-			{
-				const uint16 *triIndex = (const uint16 *)iba.getPtr();
-				uint numTri = primitive.getNumIndexes() / 3;
-				uint tri;
-				for (tri = 0; tri < numTri; tri++)
-				{
-					// Vertex
-					CVector v0 = modelMT * (*vba.getVertexCoordPointer(triIndex[tri * 3]));
-					CVector v1 = modelMT * (*vba.getVertexCoordPointer(triIndex[tri * 3 + 1]));
-					CVector v2 = modelMT * (*vba.getVertexCoordPointer(triIndex[tri * 3 + 2]));
 
-					// UV
-					float u[3] = { 0.f };
-					float v[3] = { 0.f };
-					for (uint i = 0; i < 3; i++)
-					{
-						// Get UV coordinates
-						float *uv = (float *)vba.getTexCoordPointer(triIndex[tri * 3 + i], 0);
-						if (uv)
-						{
-							// Copy it
-							u[i] = uv[0];
-							v[i] = uv[1];
-						}
-					}
-
-					// Make a triangle
-					triangleArray.push_back(CTriangle(NLMISC::CTriangle(v0, v1, v2), doubleSided, texture, clampU, clampV, u, v,
-						alphaTestThreshold));
-				}
-			}
-			else
-			{
-				nlerror("Invalid index buffer format");
+				// Make a triangle
+				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v,
+					alphaTestThreshold));
 			}
 		}
 	}

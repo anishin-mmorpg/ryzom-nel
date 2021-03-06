@@ -6,21 +6,24 @@
  * CStreamFileSource
  */
 
-// NeL - MMORPG Framework <https://wiki.ryzom.dev/>
-// Copyright (C) 2012-2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as
-// published by the Free Software Foundation, either version 3 of the
-// License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/* 
+ * Copyright (C) 2012  by authors
+ * 
+ * This file is part of RYZOM CORE.
+ * RYZOM CORE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * RYZOM CORE is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Affero General Public
+ * License along with RYZOM CORE.  If not, see
+ * <http://www.gnu.org/licenses/>.
+ */
 
 #include "stdsound.h"
 #include <nel/sound/stream_file_source.h>
@@ -108,13 +111,6 @@ void CStreamFileSource::play()
 		//{
 		//	nlwarning("Already waiting for play");
 		//}
-		std::string filepath = getStreamFileSound()->getFilePath();
-		m_LookupPath = NLMISC::CPath::lookup(filepath, false, false);
-		if (m_LookupPath.empty())
-		{
-			nlwarning("Music file %s does not exist!", filepath.c_str());
-			return;
-		}
 		if (!getStreamFileSound()->getAsync())
 		{
 			if (!prepareDecoder())
@@ -279,8 +275,7 @@ bool CStreamFileSource::prepareDecoder()
 	if (!m_AudioDecoder)
 	{
 		// load the file
-		nlassert(!m_LookupPath.empty());
-		m_AudioDecoder = IAudioDecoder::createAudioDecoder(m_LookupPath, getStreamFileSound()->getAsync(), getStreamFileSound()->getLooping());
+		m_AudioDecoder = IAudioDecoder::createAudioDecoder(getStreamFileSound()->getFilePath(), getStreamFileSound()->getAsync(), getStreamFileSound()->getLooping());
 		if (!m_AudioDecoder)
 		{
 			nlwarning("Failed to create IAudioDecoder, likely invalid format");

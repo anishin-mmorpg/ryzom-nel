@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -162,14 +158,8 @@ namespace NLGUI
 				// ...
 				limitingParent = limitingParent->getParent();
 			}
-			if (limitingParent)
-			{
-				getParentContainer()->setW(totalWidth + getParentContainer()->getWReal() - limitingParent->getWReal());
-			}
-			else
-			{
-				nlwarning("No limiting parent for width");
-			}
+
+			getParentContainer()->setW(totalWidth + getParentContainer()->getWReal() - limitingParent->getWReal());
 		}
 
 		// resize H
@@ -185,14 +175,8 @@ namespace NLGUI
 					CInterfaceGroup *limitingParent = colEnclosing->getParent();
 					while (limitingParent && (limitingParent->getResizeFromChildH() || dynamic_cast<CGroupList *>(limitingParent)))
 						limitingParent = limitingParent->getParent();
-					if (limitingParent)
-					{
-						getParentContainer()->setH(col->getH() + getParentContainer()->getHReal() - limitingParent->getHReal());
-					}
-					else
-					{
-						nlwarning("No limiting parent for height");
-					}
+
+					getParentContainer()->setH(col->getH() + getParentContainer()->getHReal() - limitingParent->getHReal());
 				}
 			}
 		}

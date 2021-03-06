@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -61,10 +57,10 @@ public:
 		keydown = 0, // a key has been press down. The key value is stored as a TKey
 		keyup,   // a key has been released. The key value is stored as a TKey
 		keychar,  // a key has been stroke. The key is a ucchar
-		keystring, // a string has been sent. The string is a utf-8 string
+		keystring, // a string has been sent. The string is a ucstring
 		unknown, // uninitialized event
 	};
-	CEventDescriptorKey() : _KeyEvent(unknown), _CtrlState(false), _ShiftState(false), _AltState(false), _Char(0)
+	CEventDescriptorKey() : _KeyEvent(unknown)
 	{
 		_EventType = key;
 	}
@@ -83,13 +79,13 @@ public:
 		return _Key;
 	}
 	// return the char that has been pressed. The key event type MUST be 'keychar', else => assert
-	u32char getChar() const
+	ucchar getChar() const
 	{
 		nlassert(_KeyEvent == keychar);
 		return _Char;
 	}
 	// return the string that has been sent. The key event type MUST be 'keystring', else => assert
-	std::string getString() const
+	ucstring getString() const
 	{
 		nlassert(_KeyEvent == keystring);
 		return _String;
@@ -106,31 +102,6 @@ public:
 	{
 		return _AltState;
 	}
-
-	// return true if key was pressed or held down at a time of this event
-	bool isShiftDown()
-	{
-		return (_KeyEvent == CEventDescriptorKey::keydown && (_Key == NLMISC::KeySHIFT || _ShiftState))
-			|| (_KeyEvent == CEventDescriptorKey::keyup   && (_Key != NLMISC::KeySHIFT && _ShiftState))
-			|| (_KeyEvent == CEventDescriptorKey::keychar && _ShiftState);
-	}
-
-	// return true if key was pressed or held down at a time of this event
-	bool isCtrlDown()
-	{
-		return (_KeyEvent == CEventDescriptorKey::keydown && (_Key == NLMISC::KeyCONTROL || _CtrlState))
-			|| (_KeyEvent == CEventDescriptorKey::keyup   && (_Key != NLMISC::KeyCONTROL && _CtrlState))
-			|| (_KeyEvent == CEventDescriptorKey::keychar && _CtrlState);
-	}
-
-	// return true if key was pressed or held down at a time of this event
-	bool isAltDown()
-	{
-		return (_KeyEvent == CEventDescriptorKey::keydown && (_Key == NLMISC::KeyMENU || _AltState))
-			|| (_KeyEvent == CEventDescriptorKey::keyup   && (_Key != NLMISC::KeyMENU && _AltState))
-			|| (_KeyEvent == CEventDescriptorKey::keychar && _AltState);
-	}
-
 	// init from a CEventKey obj
 	void init(const NLMISC::CEventKey &ev);
 
@@ -142,9 +113,9 @@ private:
 	union
 	{
 		NLMISC::TKey	_Key;
-		u32char			_Char;
+		ucchar			_Char;
 	};
-	std::string			_String;
+	ucstring		_String;
 };
 
 // ----------------------------------------------------------------------------

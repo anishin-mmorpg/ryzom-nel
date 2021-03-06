@@ -1,10 +1,6 @@
 // Ryzom - MMORPG Framework <http://dev.ryzom.com/projects/ryzom/>
 // Copyright (C) 2010  Winch Gate Property Limited
 //
-// This source file has been modified by the following contributors:
-// Copyright (C) 2013  Laszlo KIS-ADAM (dfighter) <dfighter1985@gmail.com>
-// Copyright (C) 2020  Jan BOON (Kaetemi) <jan.boon@kaetemi.be>
-//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
 // published by the Free Software Foundation, either version 3 of the
@@ -46,7 +42,7 @@ namespace NLGUI
 		{
 		public:
 			virtual ~IViewTextFormatter(){}
-			virtual std::string formatString( const std::string &inputString, const std::string &paramString ) = 0;
+			virtual ucstring formatString( const ucstring &inputString, const ucstring &paramString ) = 0;
 		};
 
 		CViewTextFormated (const TCtorParam &param) : CViewText(param)
@@ -56,15 +52,15 @@ namespace NLGUI
 		xmlNodePtr serialize( xmlNodePtr parentNode, const char *type ) const;
 		virtual bool parse(xmlNodePtr cur, CInterfaceGroup * parentGroup);
 		virtual void checkCoords();
-		const  std::string &getFormatString() const { return _FormatString; }
-		void setFormatString(const std::string &format);
+		const  ucstring &getFormatString() const { return _FormatString; }
+		void setFormatString(const ucstring &format);
 
-		static std::string formatString(const std::string &inputString, const std::string &paramString);
+		static ucstring formatString(const ucstring &inputString, const ucstring &paramString);
 
 		static void setFormatter( IViewTextFormatter *formatter ){ textFormatter = formatter; }
 
 	private:
-		std::string	_FormatString;
+		ucstring	_FormatString;
 		static IViewTextFormatter *textFormatter;
 	};
 

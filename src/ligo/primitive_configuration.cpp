@@ -105,13 +105,13 @@ bool	CPrimitiveConfigurations::belong (const IPrimitive &primitive) const
 		for (rules=0; rules<numRules; rules++)
 		{
 			const std::pair<std::string, std::string> &pairs = matchGroup.Pairs[rules];
-			string key = toLowerAscii(pairs.second);
+			string key = toLower(pairs.second);
 
 			// Get the property
 			string value;
 			if (primitive.getPropertyByName (pairs.first.c_str(), value))
 			{
-				if (toLowerAscii(value) == key)
+				if (toLower(value) == key)
 					continue;
 			}
 
@@ -122,7 +122,7 @@ bool	CPrimitiveConfigurations::belong (const IPrimitive &primitive) const
 				uint i;
 				for (i=0; i<array->size(); i++)
 				{
-					if (toLowerAscii((*array)[i]) == key)
+					if (toLower((*array)[i]) == key)
 						break;
 				}
 				if (i!=array->size())

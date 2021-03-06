@@ -95,12 +95,8 @@ cfg.write("\t\"" + CartographerContinent + "\", \n")
 cfg.write("};\n")
 cfg.write("\n")
 cfg.write("SeasonSuffixes = {\n")
-if CartographerSeasonSuffixes:
-	for suffix in CartographerSeasonSuffixes:
-		cfg.write("\t\"" + suffix + "\", \n")
-else:
-	for suffix in MultipleTilesPostfix:
-		cfg.write("\t\"" + suffix + "\", \n")
+for suffix in MultipleTilesPostfix:
+	cfg.write("\t\"" + suffix + "\", \n")
 cfg.write("};\n")
 cfg.write("\n")
 cfg.write("InverseZTest = true;\n")
