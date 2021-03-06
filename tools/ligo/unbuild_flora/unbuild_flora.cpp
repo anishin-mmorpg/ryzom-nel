@@ -179,7 +179,7 @@ bool loadLeveldesign()
 		if (!form)
 			continue;
 		CPlant plant;
-		plant.Form = toLowerAscii(*it);
+		plant.Form = toLower(*it);
 		if (!form->getRootNode().getValueByName(plant.Shape, "3D.Shape"))
 			continue;
 		if (plant.Shape.empty())
@@ -190,7 +190,7 @@ bool loadLeveldesign()
 		if (plant.Shape.empty())
 			continue;
 		(void)plant.Shape.c_str();
-		toLowerAscii(&plant.Shape[0]);
+		toLower(&plant.Shape[0]);
 		if (!form->getRootNode().getValueByName(plant.Radius, "3D.Bounding Radius"))
 			continue;
 		printf(" = '%s', %f\n", nlUtf8ToMbcs(plant.Shape), plant.Radius);
@@ -224,7 +224,7 @@ bool loadInstances()
 			nlwarning("Invalid global pos: %f, %f, %f", gpos.x, gpos.y, gpos.z);
 			return false;
 		}
-		string zoneLwr = toLowerAscii(CFile::getFilenameWithoutExtension(*it));
+		string zoneLwr = toLower(CFile::getFilenameWithoutExtension(*it));
 		for (ptrdiff_t i = 0; i < (ptrdiff_t)ig._InstancesInfos.size(); ++i)
 		{
 			CInstanceGroup::CInstance &info = ig._InstancesInfos[i];
@@ -232,7 +232,7 @@ bool loadInstances()
 			instance.Pos = info.Pos;
 			instance.Angle = info.Rot.getAngle();
 			instance.Scale = info.Scale.z;
-			instance.Shape = toLowerAscii(info.Name);
+			instance.Shape = toLower(info.Name);
 			printf("%s\n", nlUtf8ToMbcs(instance.Shape));
 			std::map<std::string, CPlant>::iterator formIt = s_ShapeToForm.find(instance.Shape);
 			if (formIt != s_ShapeToForm.end())
@@ -278,11 +278,11 @@ bool eraseReference()
 			nlwarning("Invalid global pos: %f, %f, %f", gpos.x, gpos.y, gpos.z);
 			return false;
 		}
-		string zoneLwr = toLowerAscii(CFile::getFilenameWithoutExtension(*it));
+		string zoneLwr = toLower(CFile::getFilenameWithoutExtension(*it));
 		for (ptrdiff_t i = 0; i < (ptrdiff_t)ig._InstancesInfos.size(); ++i)
 		{
 			CInstanceGroup::CInstance &info = ig._InstancesInfos[i];
-			string shape = toLowerAscii(info.Name);
+			string shape = toLower(info.Name);
 			printf("%s\n", nlUtf8ToMbcs(shape));
 			bool erased = false;
 			for (std::list<CPoint>::iterator it(s_Instances.begin()), end(s_Instances.end()); it != end; ++it)
